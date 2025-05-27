@@ -1,17 +1,19 @@
 {
   "name": "nobs-email",
-  "version": "0.0.0",
-  "private": true,
+  "type": "module",
+  "version": "0.0.1",
   "scripts": {
-    "start": "node ./bin/www"
+    "dev": "astro dev --host 0.0.0.0",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
   },
   "dependencies": {
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
-    "dotenv": "^16.5.0",
-    "ejs": "~2.6.1",
-    "express": "~4.16.1",
-    "http-errors": "~1.6.3",
-    "morgan": "~1.9.1"
+    "@astrojs/preact": "^4.1.0",
+    "@preact/signals": "^2.0.3",
+    "@tailwindcss/vite": "^4.1.7",
+    "astro": "^5.8.0",
+    "preact": "^10.26.5",
+    "tailwindcss": "^4.1.7"
   }
 }
