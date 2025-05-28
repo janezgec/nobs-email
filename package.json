@@ -13,8 +13,15 @@
     "@preact/signals": "^2.0.3",
     "@tailwindcss/vite": "^4.1.7",
     "astro": "^5.8.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.511.0",
     "postmark": "^4.0.5",
     "preact": "^10.26.5",
+    "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.7"
+  },
+  "devDependencies": {
+    "tw-animate-css": "^1.3.0"
   }
 }

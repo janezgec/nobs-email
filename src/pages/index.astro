@@ -1,11 +1,82 @@
 ---
 // Component Imports
-import Layout from '../layouts/Layout.astro';
-
+import Layout from "../layouts/Layout.astro";
+import SignUpForm from "../components/SignUpForm.tsx";
 ---
 
 <Layout title="NoBS Email">
+	<!-- Header -->
+	<header class="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto">
+		<div class="text-lg sm:text-xl font-bold">NoBS.email</div>
+		<a
+			href="/sing-in"
+			class="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium hover:bg-blue-600 hover:text-white hover:cursor-pointer transition-colors"
+		>
+			Sign in
+		</a>
+	</header>
 
-	<h1 class="text-3xl font-bold mb-4">Cut through the BS!</h1>
-	
+	<!-- Main Content -->
+	<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+		<div class=" flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-12 lg:mb-16">
+			<!-- Left Side - Hero Content -->
+			<div class="space-y-6 lg:space-y-8 order-1 lg:order-1">
+				<div>
+					<h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 lg:mb-6">
+						Cut through the <span class="text-red-400">BS</span>
+					</h1>
+					<p class="text-base sm:text-lg text-gray-700 leading-relaxed">
+						If it doesn't translate to data, it doesn't matter.<br />
+						Extract data from emails and navigate your<br />
+						<span class="font-semibold text-purple-600">inbox as a database</span>.
+					</p>
+				</div>
+			</div>
+
+			<!-- Right Side - Sign Up Form -->
+			<div class="w-full order-2 lg:order-2">
+				<SignUpForm client:load />
+			</div>
+		</div>
+
+		<!-- Process Steps - Now below both sections -->
+		<div class="flex flex-col md:flex-row justify-center items-center md:space-x-8 space-y-6 md:space-y-0 max-w-5xl mx-auto">
+			<div
+				class="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 shadow-2xl p-8 w-full max-w-xs h-48 flex flex-col justify-center rounded-lg"
+			>
+				<div class="text-4xl font-bold text-center mb-4 text-gray-600">1</div>
+				<div class="text-center text-gray-700">
+					<div class="font-medium">Get a</div>
+					<div class="font-bold text-blue-600">@nobs.email</div>
+					<div class="font-medium">address</div>
+				</div>
+			</div>
+
+			<div class="hidden md:block text-2xl text-gray-400">→</div>
+
+			<div
+				class="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 shadow-2xl p-8 w-full max-w-xs h-48 flex flex-col justify-center rounded-lg"
+			>
+				<div class="text-4xl font-bold text-center mb-4 text-gray-600">2</div>
+				<div class="text-center text-gray-700">
+					<div class="font-medium">Send emails you</div>
+					<div class="font-bold text-purple-600">want to scrape</div>
+					<div class="font-medium">for data</div>
+				</div>
+			</div>
+
+			<div class="hidden md:block text-2xl text-gray-400">→</div>
+
+			<div
+				class="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 shadow-2xl p-8 w-full max-w-xs h-48 flex flex-col justify-center rounded-lg"
+			>
+				<div class="text-4xl font-bold text-center mb-4 text-gray-600">3</div>
+				<div class="text-center text-gray-700">
+					<div class="font-medium">Rich collections</div>
+					<div class="font-medium">of email data</div>
+					<div class="font-bold text-blue-600">extracted by AI</div>
+				</div>
+			</div>
+		</div>
+	</main>
 </Layout>

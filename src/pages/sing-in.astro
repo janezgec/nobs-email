@@ -1,0 +1,38 @@
+---
+// Component Imports
+import Layout from "../layouts/Layout.astro";
+import SignInForm from "../components/SignInForm.tsx";
+---
+
+<Layout title="Sign In - NoBS Email">
+	<!-- Header -->
+	<header class="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto">
+		<a href="/" class="text-lg sm:text-xl font-medium text-blue-600 hover:text-blue-700 transition-colors">
+			NoBS.email
+		</a>
+		<a 
+			href="/"
+			class="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+		>
+			← Back to home
+		</a>
+	</header>
+
+	<!-- Main Content -->
+	<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+		<div class="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+			<!-- Hero Text -->
+			<div class="text-center space-y-4 max-w-md">
+				<h1 class="text-3xl sm:text-4xl font-bold">
+					Welcome back
+				</h1>
+				<p class="text-gray-600 text-lg">
+					Enter your email to receive a magic link and sign in instantly.
+				</p>
+			</div>
+
+			<!-- Sign In Form -->
+			<SignInForm client:load />
+		</div>
+	</main>
+</Layout>
