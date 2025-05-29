@@ -2,11 +2,22 @@
 // Component Imports
 import Layout from "../layouts/Layout.astro";
 import SignUpForm from "../components/SignUpForm.tsx";
+import { validateUserToken } from "../lib/pocketbase";
+
+// Check if user is authenticated
+const { valid } = await validateUserToken(Astro.cookies.get('pb_auth')?.value || '');
+const isAuthenticated = valid;
 ---
 
 <Layout title="NoBS Email">
 	<!-- Main Content -->
 	<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+		{isAuthenticated ? (
+			<div class="text-center py-16">
+				<h1 class="text-4xl font-bold text-green-600 mb-4">You are logged in!</h1>
+				<p class="text-lg text-gray-600">Welcome back to NoBS Email.</p>
+			</div>
+		) : (
 		<div class=" flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-12 lg:mb-16">
 			<!-- Left Side - Hero Content -->
 			<div class="space-y-6 lg:space-y-8 order-1 lg:order-1">
@@ -67,5 +78,6 @@ import SignUpForm from "../components/SignUpForm.tsx";
 				</div>
 			</div>
 		</div>
+		)}
 	</main>
 </Layout>

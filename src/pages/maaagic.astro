@@ -1,25 +1,34 @@
----
-const url = new URL(Astro.request.url);
-const token = url.searchParams.get('token');
-
-if (!token) {
-  // No token provided, redirect to homepage
-  return Astro.redirect('/');
-}
-
-// TODO: Implement actual token validation
-
-return Astro.redirect('/');
----
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Magic Link Validation</title>
-</head>
-<body>
-    <p>Validating magic link...</p>
-</body>
+  </head>
+  <body>
+    <p id="status">Validating magic link...</p>
+
+    <script>
+      import PocketBase from "pocketbase";
+
+      const pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL);
+      const urlParams = new URLSearchParams(window.location.search);
+      const otp = urlParams.get("otp");
+      const otpId = urlParams.get("otp_id");
+
+      if (!otp || !otpId) {
+        window.location.href = "/";
+      } else {
+        pb.collection("users")
+          .authWithOTP(otpId, otp)
+          .then(() => {
+            window.location.href = "/";
+          })
+          .catch((error) => {
+            document.getElementById("status").textContent =
+              "Authentication failed";
+          });
+      }
+    </script>
+  </body>
 </html>

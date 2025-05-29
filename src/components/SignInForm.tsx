@@ -1,4 +1,7 @@
 import { useState } from 'preact/hooks';
+import PocketBase from 'pocketbase';
+
+const pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL);
 
 interface SignInFormProps {}
 
@@ -29,10 +32,15 @@ export default function SignInForm({}: SignInFormProps) {
 
     setStatus('loading');
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Request OTP via email
+      await pb.collection('users').requestOTP(email);
       setStatus('success');
-    }, 1000);
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      setStatus('error');
+      setErrorMessage('Failed to send magic link. Please try again.');
+    }
   };
 
   if (status === 'success') {

@@ -16,6 +16,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.511.0",
+    "pocketbase": "^0.26.0",
     "postmark": "^4.0.5",
     "preact": "^10.26.5",
     "tailwind-merge": "^3.3.0",

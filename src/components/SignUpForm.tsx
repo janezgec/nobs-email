@@ -1,11 +1,13 @@
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
+import PocketBase from 'pocketbase';
 
-interface SignUpFormProps {}
+const pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL);
 
-export default function SignUpForm({}: SignUpFormProps) {
+export default function SignUpForm() {
   const [drowningEmail, setDrowningEmail] = useState('janez@gec.si');
   const [nobsUsername, setNobsUsername] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -17,21 +19,67 @@ export default function SignUpForm({}: SignUpFormProps) {
     
     if (!drowningEmail.trim() || !nobsUsername.trim()) {
       setStatus('error');
+      setErrorMessage('Please fill in all fields');
       return;
     }
 
     if (!validateEmail(drowningEmail)) {
       setStatus('error');
+      setErrorMessage('Please enter a valid email address');
       return;
     }
 
     setStatus('loading');
+    setErrorMessage('');
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // random password
+      const password = Math.random().toString(36).slice(-8); // Generate a random 8-character password
+      // Create user account
+      const userData = {
+        email: drowningEmail,
+        username: nobsUsername,
+        emailVisibility: true,
+        password: password,
+        passwordConfirm: password,
+      };
+
+      await pb.collection('users').create(userData);
+      
+      // Send OTP magic link
+      await pb.collection('users').requestOTP(drowningEmail);
+      
       setStatus('success');
-    }, 1000);
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      setStatus('error');
+      setErrorMessage(error?.message || 'Failed to create account. Please try again.');
+    }
   };
+
+  // Check authentication status every second after magic link is sent
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (status === 'success') {
+      interval = setInterval(async () => {
+        try {
+          if (pb.authStore.isValid) {
+            // User is authenticated, refresh the page
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error('Error checking auth status:', error);
+        }
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [status]);
 
   if (status === 'success') {
     return (
@@ -49,7 +97,7 @@ export default function SignUpForm({}: SignUpFormProps) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-300 shadow-2xl p-6 sm:p-8 w-full max-w-md mx-auto rounded-lg">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-300 shadow-2xl p-6 sm:p-8 w-full mx-auto rounded-lg">
       <h2 className="text-xl font-semibold mb-6 text-gray-800">Gather data from emails</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,7 +153,7 @@ export default function SignUpForm({}: SignUpFormProps) {
         </div>
 
         {status === 'error' && (
-          <p className="text-red-600 text-sm">Something went wrong, please try again later</p>
+          <p className="text-red-600 text-sm">{errorMessage}</p>
         )}
 
         <button
