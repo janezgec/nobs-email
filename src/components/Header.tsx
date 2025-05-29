@@ -1,0 +1,88 @@
+import { useEffect, useState } from 'preact/hooks';
+import PocketBase from 'pocketbase';
+
+const pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL); // Adjust URL as needed
+
+interface HeaderProps {
+  currentPath: string;
+}
+
+export default function Header({ currentPath }: HeaderProps) {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = () => {
+      try {
+        const authData = pb.authStore.record;
+        setUser(authData as any);
+        if(window.location.pathname === '/sign-in') {
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const unsubscribe = pb.authStore.onChange(() => {
+      checkAuth();
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      pb.authStore.clear();
+      setUser(null);
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <header className="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="text-lg sm:text-xl font-bold">NoBS.email</div>
+        <div className="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium">
+          Loading...
+        </div>
+      </header>
+    );
+  }
+
+  return (
+    <header className="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto">
+      <div className="text-lg sm:text-xl font-bold">NoBS.email</div>
+      
+      {user ? (
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium">{user.username}@nobs.email</span>
+          <button
+            onClick={handleSignOut}
+            className="bg-transparent text-red-600 border-2 border-red-600 rounded-lg px-4 py-2 font-medium hover:bg-red-600 hover:text-white hover:cursor-pointer transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      ) : (
+        <a
+          href={currentPath === '/' ? '/sign-in' : '/'}
+          className="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium hover:bg-blue-600 hover:text-white hover:cursor-pointer transition-colors"
+        >
+          {currentPath === '/' ? 'Sign in' : 'Back to Home'}
+        </a>
+      )}
+    </header>
+  );
+}

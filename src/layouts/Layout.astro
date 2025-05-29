@@ -1,5 +1,6 @@
 ---
 import "./../styles/global.css";
+import Header from "../components/Header";
 
 const { title } = Astro.props;
 ---
@@ -22,17 +23,7 @@ const { title } = Astro.props;
   <body class="min-h-screen bg-gray-100 text-gray-900">
     <main class="max-w-7xl container mx-auto px-4 py-8">
       <!-- Header -->
-      <header
-        class="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto"
-      >
-        <div class="text-lg sm:text-xl font-bold">NoBS.email</div>
-        <a
-          href={Astro.url.pathname === '/' ? '/sing-in' : '/'}
-          class="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium hover:bg-blue-600 hover:text-white hover:cursor-pointer transition-colors"
-        >
-          {Astro.url.pathname === '/' ? 'Sign in' : 'Back to Home'}
-        </a>
-      </header>
+      <Header currentPath={Astro.url.pathname} client:load />
       <!-- Main Content -->
       <slot />
 
