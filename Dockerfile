@@ -20,8 +20,8 @@ FROM node:22-alpine AS runtime
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init for proper signal handling and curl
+RUN apk add --no-cache dumb-init curl
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
