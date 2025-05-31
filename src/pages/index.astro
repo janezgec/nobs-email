@@ -2,7 +2,7 @@
 // Component Imports
 import Layout from "../layouts/Layout.astro";
 import SignUpForm from "../components/SignUpForm.tsx";
-import { validateUserToken } from "../lib/pocketbase";
+import { validateUserToken } from "../models/user";
 
 // Check if user is authenticated
 const { valid } = await validateUserToken(Astro.cookies.get('pb_auth')?.value || '');
