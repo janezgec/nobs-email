@@ -1,8 +1,12 @@
 import PocketBase from 'pocketbase';
 import type { RecordAuthResponse } from 'pocketbase';
 
+let pb: null|PocketBase = null;
+
 export function getPB(): PocketBase {
-  const pb = new PocketBase(process.env.PUBLIC_POCKETBASE_URL);
+  if (!pb) {
+    pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL!);
+  }
   return pb;
 }
 

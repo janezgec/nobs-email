@@ -27,3 +27,49 @@ export async function ensureDatabase(pb: PocketBase, userId: string, databaseNam
     }
   }
 }
+
+export async function getDatabasesForUser(pb: PocketBase, userId: string): Promise<Database[]> {
+  try {
+    const records = await pb.collection('databases').getFullList({
+      filter: `user = "${userId}"`
+    });
+    return records as Database[];
+  } catch (error) {
+    console.error('Error fetching databases:', error);
+    throw error;
+  }
+}
+
+export async function listenToDatabases(
+  pb: PocketBase, 
+  userId: string, 
+  callback: (databases: Database[]) => void
+): Promise<() => void> {
+  const fetchAndNotify = async () => {
+    try {
+      const records = await getDatabasesForUser(pb, userId);
+      callback(records);
+    } catch (error) {
+      console.error('Error fetching databases:', error);
+    }
+  };
+
+  // Initial fetch
+  await fetchAndNotify();
+
+  // Subscribe to real-time updates
+  const unsubscribe = pb.collection('databases').subscribe('*', (e) => {
+    console.log('Database update:', e);
+    fetchAndNotify();
+  }, {
+    filter: `user = "${userId}"`
+  }).catch((error) => {
+    console.error('Error subscribing to database updates:', error);
+    throw error;
+  });
+    
+  // Return unsubscribe function
+  return async () => {
+    (await unsubscribe)?.();
+  };
+}

@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
-import PocketBase from 'pocketbase';
+import { getPB } from '../lib/pb';
 
-const pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL);
+const pb = getPB();
 
 interface SignInFormProps {}
 

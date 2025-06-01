@@ -16,19 +16,21 @@
       const otp = urlParams.get("otp");
       const otpId = urlParams.get("otp_id");
 
-      if (!otp || !otpId) {
-        window.location.href = "/";
-      } else {
-        pb.collection("users")
-          .authWithOTP(otpId, otp)
-          .then(() => {
+      (async function () {
+        try {
+          if (!otp || !otpId) {
             window.location.href = "/";
-          })
-          .catch((error) => {
-            document.getElementById("status").textContent =
-              "Authentication failed";
-          });
-      }
+          } else {
+            await pb.collection("users").authWithOTP(otpId, otp);
+            window.location.href = "/app";
+          }
+        } catch(error) {
+          const statusElement = document.getElementById("status");
+          if(statusElement !== null) {
+            statusElement.textContent = "Authentication failed";
+          }
+        }
+      })();
     </script>
   </body>
 </html>

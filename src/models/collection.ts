@@ -30,3 +30,47 @@ export async function ensureCollection(pb: PocketBase, userId: string, databaseI
     }
   }
 }
+
+export async function getCollectionsForDatabase(pb: PocketBase, databaseId: string, userId: string): Promise<Collection[]> {
+  try {
+    const records = await pb.collection('collections').getFullList({
+      filter: `database = "${databaseId}" && user = "${userId}"`
+    });
+    return records as Collection[];
+  } catch (error) {
+    console.error('Error fetching collections:', error);
+    throw error;
+  }
+}
+
+export async function listenToCollections(
+  pb: PocketBase, 
+  databaseId: string, 
+  userId: string, 
+  callback: (collections: Collection[]) => void
+): Promise<() => void> {
+  const fetchAndNotify = async () => {
+    try {
+      const records = await getCollectionsForDatabase(pb, databaseId, userId);
+      callback(records);
+    } catch (error) {
+      console.error('Error fetching collections:', error);
+    }
+  };
+
+  // Initial fetch
+  await fetchAndNotify();
+
+  // Subscribe to real-time updates
+  const unsubscribe = pb.collection('collections').subscribe('*', (e) => {
+    console.log('Collection update:', e);
+    fetchAndNotify();
+  }, {
+    filter: `database = "${databaseId}" && user = "${userId}"`
+  });
+
+  // Return unsubscribe function
+  return async () => {
+    (await unsubscribe)?.();
+  };
+}

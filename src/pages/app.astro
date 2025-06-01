@@ -1,0 +1,12 @@
+---
+// Component Imports
+import Layout from "../layouts/Layout.astro";
+import Application from "../components/App.tsx";
+---
+
+<Layout title="NoBS Email">
+	<!-- Main Content -->
+	<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <Application client:load />
+	</main>
+</Layout>

@@ -14,6 +14,7 @@ export interface ValidationResult {
 }
 
 export async function validateUserToken(token: string): Promise<ValidationResult> {
+  // ensure we are dealing with a new pocketbase instance every time (security)
   const pb = new PocketBase(process.env.PUBLIC_POCKETBASE_URL);
   try {
     pb.authStore.save(token);

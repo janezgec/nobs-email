@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
-import PocketBase from 'pocketbase';
+import { getPB } from '../lib/pb';
 
-const pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL); // Adjust URL as needed
+const pb = getPB();
 
 interface HeaderProps {
   currentPath: string;
@@ -17,8 +17,8 @@ export default function Header({ currentPath }: HeaderProps) {
       try {
         const authData = pb.authStore.record;
         setUser(authData as any);
-        if(window.location.pathname === '/sign-in') {
-          window.location.href = '/';
+        if(window.location.pathname === '/sign-in' || window.location.pathname === '/') {
+          window.location.href = '/app';
         }
       } catch (error) {
         console.error('Auth check failed:', error);
