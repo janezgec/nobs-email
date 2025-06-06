@@ -6,6 +6,7 @@ export interface Document extends RecordModel {
   user: string; // User ID
   collection: string; // Collection ID
   database: string; // Database ID
+  email: string; // Email document ID that this document originated from
   data: Record<string, any>; // Document data
   created: string; // ISO date string
   updated: string; // ISO date string
@@ -62,13 +63,15 @@ export async function insertDocument(
   userId: string,
   databaseId: string,
   collectionId: string,
-  data: Record<string, any>
+  data: Record<string, any>,
+  emailId?: string
 ): Promise<Document> {
   try {
     const newDoc = await pb.collection('documents').create({
       user: userId,
       collection: collectionId,
       database: databaseId,
+      email: emailId,
       data
     });
     return newDoc as Document;

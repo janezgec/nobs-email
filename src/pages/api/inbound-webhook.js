@@ -102,7 +102,7 @@ export async function POST({ request }) {
           // Insert documents into the collection
           for (const document of documents) {
             try {
-              await insertDocument(pb, user.id, database.id, collection.id, document);
+              await insertDocument(pb, user.id, database.id, collection.id, document, emailPB.id);
               console.log(`Inserted document into collection: ${collectionName}`);
             } catch (error) {
               console.error(`Error inserting document into collection ${collectionName}:`, error);
