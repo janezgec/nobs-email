@@ -40,3 +40,13 @@ export async function getUserByEmail(pb: PocketBase, email: string): Promise<Use
     throw error;
   }
 }
+
+export async function getUserByUsername(pb: PocketBase, username: string): Promise<User> {
+  try {
+    const user = await pb.collection('users').getFirstListItem(`username="${username}"`);
+    return user as User;
+  } catch (error) {
+    console.error(`Error fetching user by username ${username}:`, error);
+    throw error;
+  }
+}
