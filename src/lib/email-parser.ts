@@ -91,6 +91,10 @@ export function getDatabaseFromEmail(email: string): string {
   email = email.trim().toLowerCase();
   const atIndex = email.indexOf('@');
   if (atIndex === -1) return 'default';
-  const str = (email.split('+')[1] || '').trim();
-  return str.replace(/[^a-z0-9]/g, '') || 'default';
+  const beforeAt = email.split('@')[0];
+  if (beforeAt.includes('+')) {
+    return beforeAt.split('+')[1].replace(/[^a-z0-9]/g, '');
+  } else {
+    return 'default';
+  }
 }
