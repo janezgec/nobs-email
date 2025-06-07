@@ -15,51 +15,6 @@ import AddDocumentModal from './App/AddDocumentModal';
 
 const pb = getPB();
 
-const WaitingDataLoader: FunctionalComponent = () => {
-  const [dots, setDots] = useState(1);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDots(prev => prev >= 3 ? 0 : prev + 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <h2 className="text-xl font-semibold text-gray-600">
-      {'.'.repeat(dots) || (<span>&nbsp;</span>)}
-    </h2>
-  );
-};
-
-const CyclingText: FunctionalComponent = () => {
-  const options = [
-    'asana notifications',
-    'blog comments',
-    'facebook notifications',
-    'system emails',
-    'slack notifications',
-    'ai newsletter'
-  ];
-  
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % options.length);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <span className="font-semibold text-red-600 underline" style={{ width: '240px', display: 'inline-block' }}>
-      {options[currentIndex]}
-    </span>
-  );
-};
-
 const App: FunctionalComponent = () => {
   console.log('App component rendering...');
   
@@ -76,6 +31,10 @@ const App: FunctionalComponent = () => {
   const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
   const [showEditSchemaModal, setShowEditSchemaModal] = useState(false);
   const [showAddDocumentModal, setShowAddDocumentModal] = useState(false);
+  
+  // Reprocessing state
+  const [showReprocessPrompt, setShowReprocessPrompt] = useState(false);
+  const [isReprocessing, setIsReprocessing] = useState(false);
 
   useEffect(() => {
     console.log('App component mounted - useEffect running');
@@ -141,6 +100,7 @@ const App: FunctionalComponent = () => {
     if (!selectedTab || !user) {
       setCollections([]);
       setSelectedCollection(null);
+      setShowReprocessPrompt(false); // Hide prompt when switching databases
       return;
     }
 
@@ -175,6 +135,8 @@ const App: FunctionalComponent = () => {
       return;
     }
 
+    setShowReprocessPrompt(false); // Hide prompt when switching collections
+
     const fetchCollectionData = async () => {
       try {
         const documents = await getDocumentsForCollection(pb, selectedCollection, user.id);
@@ -203,6 +165,11 @@ const App: FunctionalComponent = () => {
     try {
       await createCollection(pb, user.id, selectedTab, name, schema, description);
       // Collection list will update automatically via the listener
+      
+      // Show reprocess prompt if schema is defined and not an emails collection
+      if (schema.length > 0 && name !== 'emails') {
+        setShowReprocessPrompt(true);
+      }
     } catch (error) {
       console.error('Error creating collection:', error);
       throw error;
@@ -218,6 +185,12 @@ const App: FunctionalComponent = () => {
         updateCollectionSchema(pb, user.id, selectedCollection, schema)
       ]);
       // Collections will update automatically via the listener
+      
+      // Show reprocess prompt if schema is defined and not an emails collection
+      const collection = collections.find(c => c.id === selectedCollection);
+      if (schema.length > 0 && collection?.name !== 'emails') {
+        setShowReprocessPrompt(true);
+      }
     } catch (error) {
       console.error('Error updating collection:', error);
       throw error;
@@ -264,6 +237,43 @@ const App: FunctionalComponent = () => {
         console.error('Error deleting collection:', error);
         alert('Failed to delete collection: ' + (error instanceof Error ? error.message : 'Unknown error'));
       }
+    }
+  };
+
+  const handleReprocessEmails = async () => {
+    if (!selectedTab || !user) return;
+    
+    setIsReprocessing(true);
+    try {
+      const response = await fetch('/api/reprocess-emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          databaseId: selectedTab,
+          token: pb.authStore.token
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`Successfully reprocessed ${result.processedEmails} emails and extracted ${result.extractedDocuments} documents!`);
+        // Refresh collection data
+        if (selectedCollection) {
+          const documents = await getDocumentsForCollection(pb, selectedCollection, user.id);
+          setCollectionData(documents);
+        }
+      } else {
+        alert('Failed to reprocess emails: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error reprocessing emails:', error);
+      alert('Failed to reprocess emails: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsReprocessing(false);
+      setShowReprocessPrompt(false);
     }
   };
 
@@ -341,6 +351,53 @@ const App: FunctionalComponent = () => {
         </nav>
       </div>
       
+      {/* Reprocess prompt banner */}
+      {showReprocessPrompt && selectedTab && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-blue-700">
+                  <span className="font-medium">Collection schema updated!</span>
+                  {' '}Would you like to re-process all past emails in this database to extract data using the new schema?
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleReprocessEmails}
+                disabled={isReprocessing}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isReprocessing ? 'Processing...' : 'Yes, Re-process'}
+              </button>
+              <button
+                onClick={() => setShowReprocessPrompt(false)}
+                disabled={isReprocessing}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Later
+              </button>
+              <button
+                onClick={() => setShowReprocessPrompt(false)}
+                disabled={isReprocessing}
+                className="text-gray-400 hover:text-gray-600 p-1"
+                title="Close"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {selectedTab && (
         <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-auto">
           <div className="flex h-[600px]">
@@ -385,6 +442,7 @@ const App: FunctionalComponent = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setSelectedCollection(collection.id);
                                   setShowEditSchemaModal(true);
                                 }}
                                 className="w-5 h-5 bg-gray-700 text-white text-xs rounded hover:bg-gray-800"
