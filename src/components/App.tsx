@@ -112,7 +112,7 @@ const App: FunctionalComponent = () => {
           // Set first collection as selected if none selected
           setTimeout(() => {
             if (records.length > 0 && !selectedCollection) {
-              setSelectedCollection(records[0].id);
+              // setSelectedCollection(records[0].id);
             }
           },300);
         });
