@@ -6,6 +6,7 @@ let pb: null|PocketBase = null;
 export function getPB(): PocketBase {
   if (!pb) {
     pb = new PocketBase(typeof process === 'undefined'? import.meta.env.PUBLIC_POCKETBASE_URL! : process.env.PUBLIC_POCKETBASE_URL);
+    pb.autoCancellation(false);
   }
   return pb;
 }

@@ -17,7 +17,7 @@ export default function Header({ currentPath }: HeaderProps) {
       try {
         const authData = pb.authStore.record;
         setUser(authData as any);
-        if(window.location.pathname === '/sign-in' || window.location.pathname === '/') {
+        if(authData && (window.location.pathname === '/sign-in' || window.location.pathname === '/')) {
           window.location.href = '/app';
         }
       } catch (error) {
