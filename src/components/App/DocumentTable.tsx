@@ -1,12 +1,37 @@
 import { useMemo } from 'preact/hooks';
 import type { FunctionalComponent } from 'preact';
 import type { Document } from '../../models/document';
+import TableCellValue from './TableCellValue';
 
 interface DocumentTableProps {
   documents: Document[];
 }
 
 const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents }) => {
+  // Helper function to get relative time
+  const getRelativeTime = (dateString: string): string => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInSeconds = Math.floor(diffInMs / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+    const diffInWeeks = Math.floor(diffInDays / 7);
+
+    if (diffInSeconds < 60) {
+      return 'just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes} min${diffInMinutes !== 1 ? 's' : ''} ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
+    } else {
+      return `${diffInWeeks} week${diffInWeeks !== 1 ? 's' : ''} ago`;
+    }
+  };
+
   // Sort documents by created time in descending order (newest first)
   const sortedDocuments = useMemo(() => {
     return [...documents].sort((a, b) => {
@@ -26,17 +51,16 @@ const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents }) =
       }
     });
     
-    return Array.from(columnSet).sort();
+    const allColumns = Array.from(columnSet);
+    const priorityColumns = ['name', 'title', 'subject'];
+    
+    // Separate priority columns that exist and other columns
+    const existingPriorityColumns = priorityColumns.filter(col => allColumns.includes(col));
+    const otherColumns = allColumns.filter(col => !priorityColumns.includes(col)).sort();
+    
+    // Return priority columns first, then other columns sorted alphabetically
+    return [...existingPriorityColumns, ...otherColumns];
   }, [documents]);
-
-  // Helper function to safely get nested values
-  const getValue = (obj: any, key: string): string => {
-    if (!obj || typeof obj !== 'object') return 'N/A';
-    const value = obj[key];
-    if (value === null || value === undefined) return 'N/A';
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
-  };
 
   if (documents.length === 0) {
     return (
@@ -89,39 +113,20 @@ const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents }) =
                 {columns.map(column => (
                   <td 
                     key={column}
-                    className="px-6 py-4 text-sm text-gray-900"
+                    className="px-6 py-4 text-xs text-gray-900"
                   >
-                    <div className="max-w-xs">
-                      {(() => {
-                        const value = getValue(item.data, column);
-                        // If the value looks like JSON, display it in a code block
-                        if (value.startsWith('{') || value.startsWith('[')) {
-                          try {
-                            const parsed = JSON.parse(value);
-                            return (
-                              <pre className="whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded max-w-xs overflow-auto max-h-32">
-                                {JSON.stringify(parsed, null, 2)}
-                              </pre>
-                            );
-                          } catch {
-                            // Fall through to regular text display
-                          }
-                        }
-                        // Regular text display with line breaks
-                        return (
-                          <div className="break-words">
-                            {value.split('\n').map((line, i) => (
-                              <div key={i}>{line || '\u00A0'}</div>
-                            ))}
-                          </div>
-                        );
-                      })()}
-                    </div>
+                    <TableCellValue value={item.data?.[column]} />
                   </td>
                 ))}
                 {/* Created date column */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {item.created ? new Date(item.created).toLocaleString() : 'N/A'}
+                <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                  {item.created ? (
+                    <span title={new Date(item.created).toLocaleString()}>
+                      {getRelativeTime(item.created)}
+                    </span>
+                  ) : (
+                    'N/A'
+                  )}
                 </td>
               </tr>
             ))}
