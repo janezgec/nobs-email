@@ -3,6 +3,7 @@ import { getPB, authSuperAdmin } from '../../lib/pb';
 import { getCollectionsForDatabase } from '../../models/collection';
 import { scrapeEmailForData } from '../../lib/email-scraper';
 import { insertDocument } from '../../models/document';
+import { useQuota, QuotaExceededError } from '../../models/quota';
 import TurndownService from 'turndown';
 
 export async function POST({ request }) {
@@ -76,10 +77,23 @@ export async function POST({ request }) {
 
     let processedCount = 0;
     let extractedCount = 0;
+    let skippedQuotaCount = 0;
 
     // Process each email
     for (const emailDoc of emails) {
       try {
+        // Check quota before processing each email
+        try {
+          await useQuota(pb, userId);
+        } catch (error) {
+          if (error instanceof QuotaExceededError) {
+            console.log(`Quota exceeded for user ${userId}, skipping remaining emails`);
+            skippedQuotaCount = emails.length - processedCount;
+            break;
+          }
+          throw error;
+        }
+
         const emailData = emailDoc.data;
         let emailContent = emailData.htmlBody || emailData.textBody || '';
         
@@ -143,7 +157,8 @@ export async function POST({ request }) {
       success: true, 
       processedEmails: processedCount,
       extractedDocuments: extractedCount,
-      totalEmails: emails.length
+      totalEmails: emails.length,
+      skippedQuotaCount: skippedQuotaCount
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

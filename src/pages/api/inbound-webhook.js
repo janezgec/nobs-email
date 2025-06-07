@@ -5,6 +5,7 @@ import { ensureEmailCollection, getCollectionsForDatabase } from './../../models
 import { getPB, authSuperAdmin } from './../../lib/pb';
 import { getDocumentByDataProperty, insertDocument } from './../../models/document';
 import { scrapeEmailForData } from './../../lib/email-scraper';
+import { useQuota, QuotaExceededError } from './../../models/quota';
 import TurndownService from 'turndown';
 
 function successResponse(email) {
@@ -38,6 +39,25 @@ export async function POST({ request }) {
 
     // get user
     const user = await getUserByUsername(pb, username);
+
+    // Check quota before processing
+    try {
+      await useQuota(pb, user.id);
+    } catch (error) {
+      if (error instanceof QuotaExceededError) {
+        console.log(`Quota exceeded for user ${user.id}, skipping email processing`);
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: 'Email skipped - quota exceeded',
+          messageId: email.messageId,
+          quotaExceeded: true
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      throw error;
+    }
 
     // get database
     const databaseName = getDatabaseFromEmail(email.to);
