@@ -110,9 +110,11 @@ const App: FunctionalComponent = () => {
           setCollections(records);
           
           // Set first collection as selected if none selected
-          if (records.length > 0 && !selectedCollection) {
-            setSelectedCollection(records[0].id);
-          }
+          setTimeout(() => {
+            if (records.length > 0 && !selectedCollection) {
+              setSelectedCollection(records[0].id);
+            }
+          },300);
         });
 
         return unsubscribe;
