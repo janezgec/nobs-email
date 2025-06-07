@@ -1,7 +1,7 @@
 import { postmarkPayloadToEmailData, getUsernameFromEmail, getDatabaseFromEmail } from './../../lib/email-parser';
 import { getUserByUsername } from './../../models/user';
 import { ensureDatabase } from './../../models/database';
-import { ensureCollection, getCollectionsForDatabase } from './../../models/collection';
+import { ensureEmailCollection, getCollectionsForDatabase } from './../../models/collection';
 import { getPB, authSuperAdmin } from './../../lib/pb';
 import { getDocumentByDataProperty, insertDocument } from './../../models/document';
 import { scrapeEmailForData } from './../../lib/email-scraper';
@@ -52,14 +52,25 @@ export async function POST({ request }) {
     // get all collections in database
     const collections = await getCollectionsForDatabase(pb, database.id, user.id);
     
+    // ensure email collection with static schema
+    const emailCollection = await ensureEmailCollection(pb, user.id, database.id);
+    
+    // prepare email data according to schema
+    const emailData = {
+      messageId: email.messageId,
+      from: email.from,
+      subject: email.subject || '',
+      htmlBody: email.htmlBody || '',
+      textBody: email.textBody || ''
+    };
+    
     // insert email into database (skip if it already exists)
-    const emailCollection = await ensureCollection(pb, user.id, database.id, 'emails');
     const existingEmail = await getDocumentByDataProperty(pb, emailCollection.id, 'messageId', email.messageId);
     if (existingEmail) {
       console.log('Email already exists in the database, skipping insert');
       return successResponse(email);
     }
-    const emailPB = await insertDocument(pb, user.id, database.id, emailCollection.id, email);
+    const emailPB = await insertDocument(pb, user.id, database.id, emailCollection.id, emailData);
 
     // Scrape email content using predefined collection schemas
     const emailContent = email.htmlBody || email.textBody || '';

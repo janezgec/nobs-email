@@ -38,6 +38,47 @@ export async function ensureCollection(pb: PocketBase, userId: string, databaseI
   }
 }
 
+export async function ensureEmailCollection(pb: PocketBase, userId: string, databaseId: string): Promise<Collection> {
+  const emailSchema: SchemaField[] = [
+    { name: 'messageId', type: 'string', required: true, description: 'Unique identifier for the email message' },
+    { name: 'from', type: 'email', required: true, description: 'Email address of the sender' },
+    { name: 'subject', type: 'string', required: false, description: 'Subject line of the email' },
+    { name: 'htmlBody', type: 'string', required: false, description: 'HTML content of the email' },
+    { name: 'textBody', type: 'string', required: false, description: 'Plain text content of the email' }
+  ];
+
+  try {
+    const collectionRecord = await pb.collection('collections').getFirstListItem(`name="emails" && database="${databaseId}"`);
+    const collection = collectionRecord as Collection;
+    
+    // Update schema if it doesn't match the expected schema
+    const expectedSchema = schemaFieldsToJsonSchema(emailSchema);
+    if (JSON.stringify(collection.docDataSchema) !== JSON.stringify(expectedSchema)) {
+      const updatedRecord = await pb.collection('collections').update(collection.id, {
+        docDataSchema: expectedSchema
+      });
+      console.log(`Updated email collection schema in database ${databaseId}`);
+      return updatedRecord as Collection;
+    }
+    
+    return collection;
+  } catch (error) {
+    if(error && typeof error === 'object' && 'status' in error && error.status === 404) {
+      const collectionRecord = await pb.collection('collections').create({
+        name: 'emails',
+        database: databaseId,
+        user: userId,
+        docDataSchema: schemaFieldsToJsonSchema(emailSchema)
+      });
+      console.log(`Email collection created in database ${databaseId} for user ${userId}`);
+      return collectionRecord as Collection;
+    } else {
+      console.error(`Error ensuring email collection in database ${databaseId} for user ${userId}:`, error);
+      throw error;
+    }
+  }
+}
+
 export async function getCollectionsForDatabase(pb: PocketBase, databaseId: string, userId: string): Promise<Collection[]> {
   try {
     const records = await pb.collection('collections').getFullList({
