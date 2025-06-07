@@ -52,27 +52,6 @@ export async function POST({ request }) {
     // get all collections in database
     const collections = await getCollectionsForDatabase(pb, database.id, user.id);
     
-    // Build schema from existing collections
-    const existingSchema = {
-      type: 'object',
-      properties: {}
-    };
-    for(let collection of collections) {
-      if(collection.name === 'emails') {
-        // Skip emails collection as it is handled separately
-        continue;
-      }
-      if (collection.docDataSchema) {
-        existingSchema.properties[collection.name] = {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: collection.docDataSchema
-          }
-        };
-      }
-    }
-
     // insert email into database (skip if it already exists)
     const emailCollection = await ensureCollection(pb, user.id, database.id, 'emails');
     const existingEmail = await getDocumentByDataProperty(pb, emailCollection.id, 'messageId', email.messageId);
@@ -82,36 +61,36 @@ export async function POST({ request }) {
     }
     const emailPB = await insertDocument(pb, user.id, database.id, emailCollection.id, email);
 
-
-    // Scrape email content
+    // Scrape email content using predefined collection schemas
     const emailContent = email.htmlBody || email.textBody || '';
     if(!emailContent) {
       console.error('No HTML or text content found in email');
       return successResponse(email);
     }
 
+    // Only process collections that have defined schemas (excluding emails collection)
+    const collectionsWithSchema = collections.filter(c => 
+      c.name !== 'emails' && 
+      c.docDataSchema && 
+      Object.keys(c.docDataSchema).length > 0
+    );
+
+    if (collectionsWithSchema.length === 0) {
+      console.log('No collections with defined schemas found, skipping data extraction');
+      return successResponse(email);
+    }
     
-    const { data, schema } = await scrapeEmailForData(emailContent, collections.length > 1? existingSchema : null);
+    const { data } = await scrapeEmailForData(emailContent, collectionsWithSchema);
 
     // Process each collection in the scraped data
     if (data && typeof data === 'object') {
       for (const [collectionName, documents] of Object.entries(data)) {
         if (Array.isArray(documents) && documents.length > 0) {
-          // Ensure collection exists
-          const collection = await ensureCollection(pb, user.id, database.id, collectionName);
-          
-          const collectionSchema = schema.properties[collection.name]?.items;
-          // Update collection schema if it has changed
-          if (collectionSchema) {
-            collectionSchema.type = 'object';
-            try {
-              await pb.collection('collections').update(collection.id, {
-                docDataSchema: collectionSchema
-              });
-              console.log(`Updated schema for collection: ${collectionName}`);
-            } catch (error) {
-              console.error(`Error updating schema for collection ${collectionName}:`, error);
-            }
+          // Find the existing collection
+          const collection = collections.find(c => c.name === collectionName);
+          if (!collection) {
+            console.log(`Collection ${collectionName} not found, skipping`);
+            continue;
           }
           
           // Insert documents into the collection

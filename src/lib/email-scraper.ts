@@ -1,78 +1,111 @@
 import { openrouter } from '@openrouter/ai-sdk-provider';
 import { generateObject } from 'ai';
+import { z } from 'zod';
+import type { Collection } from '../models/collection';
 
 const model = openrouter('google/gemini-2.5-flash-preview', {
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-async function dataToSchema(data: any, existingSchema?: any): Promise<any> {
-  // call the AI model to convert data to schema
-  if(!existingSchema) {
-    const prompt = `Transform this data into JSON schema, do NOT make any properties required:
-  ${JSON.stringify(data, null, 2)}`;
-    const result = await generateObject({
-      model,
-      output: 'no-schema',
-      prompt,
-    });
-
-    return result.object;
-  } else {
-    // if existing schema is provided, update the schema with what is in data
-    const prompt = `Update the existing JSON schema according to the new data provided. Add new properties, enum values where necessary but don't remove anything.
-  Existing schema:
-  ${JSON.stringify(existingSchema, null, 2)}
-  New data:
-  ${JSON.stringify(data, null, 2)}`;
-    const result = await generateObject({
-      model,
-      output: 'no-schema',
-      prompt,
-    });
-    return result.object;
+// Convert collection schema to Zod schema for AI SDK
+function createZodSchemaFromCollections(collections: Collection[]): z.ZodSchema {
+  const schemaObject: Record<string, any> = {};
+  
+  for (const collection of collections) {
+    if (collection.name === 'emails') continue; // Skip emails collection
+    
+    const properties = collection.docDataSchema || {};
+    const zodFields: Record<string, any> = {};
+    
+    // Convert each property to Zod type
+    for (const [fieldName, fieldSchema] of Object.entries(properties)) {
+      const schema = fieldSchema as any;
+      let zodType;
+      
+      switch (schema.type) {
+        case 'number':
+          zodType = z.number().optional();
+          break;
+        case 'boolean':
+          zodType = z.boolean().optional();
+          break;
+        case 'string':
+        default:
+          if (schema.format === 'email') {
+            zodType = z.string().email().optional();
+          } else if (schema.format === 'uri') {
+            zodType = z.string().url().optional();
+          } else if (schema.format === 'date-time') {
+            zodType = z.string().datetime().optional();
+          } else {
+            zodType = z.string().optional();
+          }
+          break;
+      }
+      
+      zodFields[fieldName] = zodType;
+    }
+    
+    if (Object.keys(zodFields).length > 0) {
+      schemaObject[collection.name] = z.array(z.object(zodFields)).optional();
+    }
   }
+  
+  return z.object(schemaObject);
 }
 
 export async function scrapeEmailForData(
   emailContent: string,
-  schema: any = null
-): Promise<{ data: any; schema: any }> {
-  let prompt = `
-        Extract from this email contents all the data you can find and return a json with it.
-        Have root json properties as collection names and they contain arrays of items (documents).
-        Example of collections: people, updates, ai tools, tutorials, companies, materials...
-      `.split('\n').map(line => line.trim()).join('\n');
-
-  if (schema) {
-    prompt += `\n\nHere is the schema of the data collected so far, you may add new collections or properties or enum values if needed, otherwise use what is there.
-    <SCHEMA>${JSON.stringify(schema)}</SCHEMA>`;
+  collections: Collection[]
+): Promise<{ data: any }> {
+  // Filter out emails collection and only process collections with defined schemas
+  const validCollections = collections.filter(c => 
+    c.name !== 'emails' && 
+    c.docDataSchema && 
+    Object.keys(c.docDataSchema).length > 0
+  );
+  
+  if (validCollections.length === 0) {
+    return { data: {} };
   }
+  
+  // Create Zod schema from collections
+  const zodSchema = createZodSchemaFromCollections(validCollections);
+  
+  // Build collection descriptions for the prompt
+  const collectionDescriptions = validCollections.map(collection => {
+    const fields = Object.entries(collection.docDataSchema).map(([name, schema]: [string, any]) => {
+      const description = schema.description ? ` (${schema.description})` : '';
+      return `- ${name}: ${schema.type}${description}`;
+    }).join('\n    ');
+    
+    return `${collection.name}:\n    ${fields}`;
+  }).join('\n\n');
+  
+  const prompt = `
+Extract data from this email content and organize it according to the predefined collections and their schemas.
+Only extract data that fits the defined collections and their field types. Do not create new collections or fields.
 
-  prompt += `\n\n<EMAIL_CONTENT>${emailContent}</EMAIL_CONTENT>`;
+Available Collections and their schemas:
+${collectionDescriptions}
+
+Email Content:
+${emailContent}
+
+Return a JSON object where each collection name is a key containing an array of objects that match the collection's schema.
+Only include collections that have relevant data extracted from the email.
+  `.trim();
   
   try {
     const result = await generateObject({
       model,
-      output: 'no-schema',
+      schema: zodSchema,
       prompt,
     });
 
-    const data = result.object || {};
-
-    // clean up collections that shouldn't be there
-    const unwantedCollections = ['email', 'emails', 'email_content', 'email_contents'];
-    for (const collection of unwantedCollections) {
-      if (data[collection]) {
-        delete data[collection];
-      }
-    }
-
-    const newSchema = await dataToSchema(data, schema);
-    
     return {
       data: result.object,
-      schema: newSchema,
-    }
+    };
 
   } catch (error) {
     console.error('Error scraping email data:', error);

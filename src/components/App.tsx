@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'preact/hooks';
 import type { FunctionalComponent } from 'preact';
 import { getPB } from '../lib/pb';
-import type { Collection } from '../models/collection';
+import type { Collection, SchemaField } from '../models/collection';
 import type { Document } from '../models/document';
-import { listenToDatabases } from '../models/database';
-import { listenToCollections } from '../models/collection';
-import { getDocumentsForCollection } from '../models/document';
+import type { Database } from '../models/database';
+import { listenToDatabases, createDatabase, deleteDatabase } from '../models/database';
+import { listenToCollections, createCollection, updateCollectionSchema, deleteCollection } from '../models/collection';
+import { getDocumentsForCollection, insertDocument } from '../models/document';
 import DocumentTable from './App/DocumentTable';
+import CreateDatabaseModal from './App/CreateDatabaseModal';
+import CreateCollectionModal from './App/CreateCollectionModal';
+import EditSchemaModal from './App/EditSchemaModal';
+import AddDocumentModal from './App/AddDocumentModal';
 
 const pb = getPB();
 
@@ -60,11 +65,17 @@ const App: FunctionalComponent = () => {
   
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [databases, setDatabases] = useState<any[]>([]);
+  const [databases, setDatabases] = useState<Database[]>([]);
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [collectionData, setCollectionData] = useState<Document[]>([]);
+  
+  // Modal states
+  const [showCreateDatabaseModal, setShowCreateDatabaseModal] = useState(false);
+  const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
+  const [showEditSchemaModal, setShowEditSchemaModal] = useState(false);
+  const [showAddDocumentModal, setShowAddDocumentModal] = useState(false);
 
   useEffect(() => {
     console.log('App component mounted - useEffect running');
@@ -176,6 +187,82 @@ const App: FunctionalComponent = () => {
     fetchCollectionData();
   }, [selectedCollection, user]);
 
+  // Modal handlers
+  const handleCreateDatabase = async (name: string) => {
+    try {
+      await createDatabase(pb, user.id, name);
+      // Database list will update automatically via the listener
+    } catch (error) {
+      console.error('Error creating database:', error);
+      throw error;
+    }
+  };
+
+  const handleCreateCollection = async (name: string, schema: SchemaField[]) => {
+    if (!selectedTab) return;
+    try {
+      await createCollection(pb, user.id, selectedTab, name, schema);
+      // Collection list will update automatically via the listener
+    } catch (error) {
+      console.error('Error creating collection:', error);
+      throw error;
+    }
+  };
+
+  const handleUpdateSchema = async (schema: SchemaField[]) => {
+    if (!selectedCollection) return;
+    try {
+      await updateCollectionSchema(pb, user.id, selectedCollection, schema);
+      // Collections will update automatically via the listener
+    } catch (error) {
+      console.error('Error updating schema:', error);
+      throw error;
+    }
+  };
+
+  const handleAddDocument = async (data: Record<string, any>) => {
+    if (!selectedCollection || !selectedTab) return;
+    try {
+      await insertDocument(pb, user.id, selectedTab, selectedCollection, data);
+      // Refresh collection data
+      const documents = await getDocumentsForCollection(pb, selectedCollection, user.id);
+      setCollectionData(documents);
+    } catch (error) {
+      console.error('Error adding document:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteDatabase = async (databaseId: string) => {
+    if (confirm('Are you sure you want to delete this database? All collections and documents will be deleted.')) {
+      try {
+        await deleteDatabase(pb, user.id, databaseId);
+        // Database list will update automatically via the listener
+        if (selectedTab === databaseId) {
+          setSelectedTab(null);
+        }
+      } catch (error) {
+        console.error('Error deleting database:', error);
+        alert('Failed to delete database: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      }
+    }
+  };
+
+  const handleDeleteCollection = async (collectionId: string) => {
+    if (confirm('Are you sure you want to delete this collection? All documents will be deleted.')) {
+      try {
+        await deleteCollection(pb, user.id, collectionId);
+        // Collection list will update automatically via the listener
+        if (selectedCollection === collectionId) {
+          setSelectedCollection(null);
+        }
+      } catch (error) {
+        console.error('Error deleting collection:', error);
+        alert('Failed to delete collection: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      }
+    }
+  };
+
   if (!user) {
     return (
       <div className="flex justify-center items-center flex-col">
@@ -192,16 +279,23 @@ const App: FunctionalComponent = () => {
     return (
       <div className="flex justify-top items-center flex-col text-center px-4 py-16">
         <div className="max-w-lg mx-auto space-y-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Ready for <span className="line-through">emails</span> data!</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Create your first database!</h1>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Send <CyclingText /> emails to{' '}
-            <span className="font-semibold text-purple-600">janez@nobs.email</span>{' '}
-            to start seeing data.
+            Get started by creating a database to organize your data collections.
           </p>
-          <div className="text-gray-400">
-            <WaitingDataLoader />
-          </div>
+          <button
+            onClick={() => setShowCreateDatabaseModal(true)}
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Create Database
+          </button>
         </div>
+        
+        <CreateDatabaseModal
+          isOpen={showCreateDatabaseModal}
+          onClose={() => setShowCreateDatabaseModal(false)}
+          onSubmit={handleCreateDatabase}
+        />
       </div>
     );
   }
@@ -209,20 +303,37 @@ const App: FunctionalComponent = () => {
   return (
     <div>
       <div className="border-b border-gray-200 mb-8">
-        <nav className="flex space-x-1">
+        <nav className="flex items-center space-x-1">
           {databases.map((database) => (
-            <button
-              key={database.id}
-              onClick={() => setSelectedTab(database.id)}
-              className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors duration-200 ${
-                selectedTab === database.id
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
-              }`}
-            >
-              {database.name || database.id}
-            </button>
+            <div key={database.id} className="relative group">
+              <button
+                onClick={() => setSelectedTab(database.id)}
+                className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors duration-200 ${
+                  selectedTab === database.id
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                }`}
+              >
+                {database.name || database.id}
+              </button>
+              {selectedTab === database.id && (
+                <button
+                  onClick={() => handleDeleteDatabase(database.id)}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete database"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           ))}
+          <button
+            onClick={() => setShowCreateDatabaseModal(true)}
+            className="px-4 py-3 font-medium text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-t-lg transition-colors duration-200"
+            title="Create new database"
+          >
+            +
+          </button>
         </nav>
       </div>
       
@@ -231,32 +342,66 @@ const App: FunctionalComponent = () => {
           <div className="flex h-[600px]">
             {/* Collections sidebar */}
             <div className="w-64 flex-shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col">
-              <div className="p-4 border-b border-gray-200">
+              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-800">Collections</h3>
+                <button
+                  onClick={() => setShowCreateCollectionModal(true)}
+                  className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  title="Create new collection"
+                >
+                  + Add
+                </button>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {collections.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
                     <p className="text-sm">No collections found</p>
-                    <p className="text-xs mt-1">Send emails to create collections</p>
+                    <p className="text-xs mt-1">Click "Add" to create a collection</p>
                   </div>
                 ) : (
                   <div className="p-2 space-y-1">
                     {collections.map((collection) => (
-                      <button
-                        key={collection.id}
-                        onClick={() => setSelectedCollection(collection.id)}
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                          selectedCollection === collection.id
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
-                        }`}
-                      >
-                        <div className="truncate">{collection.name}</div>
-                        <div className="text-xs opacity-75 truncate">
-                          {new Date(collection.created).toLocaleDateString()}
-                        </div>
-                      </button>
+                      <div key={collection.id} className="relative group">
+                        <button
+                          onClick={() => setSelectedCollection(collection.id)}
+                          className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                            selectedCollection === collection.id
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
+                          }`}
+                        >
+                          <div className="truncate">{collection.name}</div>
+                          <div className="text-xs opacity-75 truncate">
+                            {new Date(collection.created).toLocaleDateString()}
+                          </div>
+                        </button>
+                        {selectedCollection === collection.id && (
+                          <div className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex space-x-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowEditSchemaModal(true);
+                                }}
+                                className="w-5 h-5 bg-gray-700 text-white text-xs rounded hover:bg-gray-800"
+                                title="Edit schema"
+                              >
+                                ⚙
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCollection(collection.id);
+                                }}
+                                className="w-5 h-5 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                                title="Delete collection"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -310,6 +455,33 @@ const App: FunctionalComponent = () => {
           </div>
         </div>
       )}
+      
+      {/* Modals */}
+      <CreateDatabaseModal
+        isOpen={showCreateDatabaseModal}
+        onClose={() => setShowCreateDatabaseModal(false)}
+        onSubmit={handleCreateDatabase}
+      />
+      
+      <CreateCollectionModal
+        isOpen={showCreateCollectionModal}
+        onClose={() => setShowCreateCollectionModal(false)}
+        onSubmit={handleCreateCollection}
+      />
+      
+      <EditSchemaModal
+        isOpen={showEditSchemaModal}
+        onClose={() => setShowEditSchemaModal(false)}
+        onSubmit={handleUpdateSchema}
+        collection={collections.find(c => c.id === selectedCollection) || null}
+      />
+      
+      <AddDocumentModal
+        isOpen={showAddDocumentModal}
+        onClose={() => setShowAddDocumentModal(false)}
+        onSubmit={handleAddDocument}
+        collection={collections.find(c => c.id === selectedCollection) || null}
+      />
     </div>
   );
 };
