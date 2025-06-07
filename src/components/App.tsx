@@ -5,7 +5,7 @@ import type { Collection, SchemaField } from '../models/collection';
 import type { Document } from '../models/document';
 import type { Database } from '../models/database';
 import { listenToDatabases, createDatabase, deleteDatabase } from '../models/database';
-import { listenToCollections, createCollection, updateCollectionSchema, deleteCollection } from '../models/collection';
+import { listenToCollections, createCollection, updateCollectionSchema, updateCollectionDescription, deleteCollection } from '../models/collection';
 import { getDocumentsForCollection, insertDocument } from '../models/document';
 import DocumentTable from './App/DocumentTable';
 import CreateDatabaseModal from './App/CreateDatabaseModal';
@@ -198,10 +198,10 @@ const App: FunctionalComponent = () => {
     }
   };
 
-  const handleCreateCollection = async (name: string, schema: SchemaField[]) => {
+  const handleCreateCollection = async (name: string, description: string, schema: SchemaField[]) => {
     if (!selectedTab) return;
     try {
-      await createCollection(pb, user.id, selectedTab, name, schema);
+      await createCollection(pb, user.id, selectedTab, name, schema, description);
       // Collection list will update automatically via the listener
     } catch (error) {
       console.error('Error creating collection:', error);
@@ -209,13 +209,17 @@ const App: FunctionalComponent = () => {
     }
   };
 
-  const handleUpdateSchema = async (schema: SchemaField[]) => {
+  const handleUpdateSchema = async (description: string, schema: SchemaField[]) => {
     if (!selectedCollection) return;
     try {
-      await updateCollectionSchema(pb, user.id, selectedCollection, schema);
+      // Update both description and schema
+      await Promise.all([
+        updateCollectionDescription(pb, user.id, selectedCollection, description),
+        updateCollectionSchema(pb, user.id, selectedCollection, schema)
+      ]);
       // Collections will update automatically via the listener
     } catch (error) {
-      console.error('Error updating schema:', error);
+      console.error('Error updating collection:', error);
       throw error;
     }
   };

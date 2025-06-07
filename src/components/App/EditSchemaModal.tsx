@@ -6,7 +6,7 @@ import { jsonSchemaToSchemaFields } from '../../models/collection';
 interface EditSchemaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (schema: SchemaField[]) => Promise<void>;
+  onSubmit: (description: string, schema: SchemaField[]) => Promise<void>;
   collection: Collection | null;
 }
 
@@ -16,6 +16,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
   onSubmit,
   collection
 }) => {
+  const [description, setDescription] = useState('');
   const [schema, setSchema] = useState<SchemaField[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,6 +25,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
     if (collection && isOpen) {
       const existingSchema = jsonSchemaToSchemaFields(collection.docDataSchema);
       setSchema(existingSchema);
+      setDescription(collection.description || '');
     }
   }, [collection, isOpen]);
 
@@ -58,10 +60,10 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
     setError('');
 
     try {
-      await onSubmit(validFields);
+      await onSubmit(description.trim(), validFields);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update schema');
+      setError(err instanceof Error ? err.message : 'Failed to update collection');
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +81,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">
-            Edit Schema - {collection.name}
+            Edit Collection - {collection.name}
           </h2>
           <button
             onClick={handleClose}
@@ -91,6 +93,20 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <label htmlFor="collection-description" className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              id="collection-description"
+              value={description}
+              onChange={(e) => setDescription((e.target as HTMLTextAreaElement).value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Describe what this collection is for (helps AI understand the data)..."
+              rows={3}
+              disabled={isLoading}
+            />
+          </div>
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-800">Columns</h3>
@@ -186,7 +202,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
               className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
-              {isLoading ? 'Saving...' : 'Save Schema'}
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

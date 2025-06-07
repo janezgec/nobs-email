@@ -4,6 +4,7 @@ import type { RecordModel } from 'pocketbase';
 export interface Collection extends RecordModel {
   id: string;
   name: string;
+  description?: string; // Collection description for AI context
   database: string;
   user: string; // User ID
   docDataSchema: any; // JSON schema for document data
@@ -66,6 +67,7 @@ export async function ensureEmailCollection(pb: PocketBase, userId: string, data
     if(error && typeof error === 'object' && 'status' in error && error.status === 404) {
       const collectionRecord = await pb.collection('collections').create({
         name: 'emails',
+        description: 'Stores email data',
         database: databaseId,
         user: userId,
         docDataSchema: schemaFieldsToJsonSchema(emailSchema)
@@ -128,7 +130,8 @@ export async function createCollection(
   userId: string, 
   databaseId: string, 
   collectionName: string,
-  schema?: SchemaField[]
+  schema?: SchemaField[],
+  description?: string
 ): Promise<Collection> {
   try {
     // Check if collection already exists
@@ -143,6 +146,7 @@ export async function createCollection(
       
       const collectionRecord = await pb.collection('collections').create({
         name: collectionName,
+        description: description || '',
         database: databaseId,
         user: userId,
         docDataSchema
@@ -179,6 +183,31 @@ export async function updateCollectionSchema(
     return updatedCollection as Collection;
   } catch (error) {
     console.error(`Error updating collection schema for ${collectionId}:`, error);
+    throw error;
+  }
+}
+
+export async function updateCollectionDescription(
+  pb: PocketBase,
+  userId: string,
+  collectionId: string,
+  description: string
+): Promise<Collection> {
+  try {
+    // Verify ownership
+    const collection = await pb.collection('collections').getOne(collectionId);
+    if (collection.user !== userId) {
+      throw new Error('You can only update your own collections');
+    }
+    
+    const updatedCollection = await pb.collection('collections').update(collectionId, {
+      description
+    });
+    
+    console.log(`Collection description updated for collection ${collectionId}`);
+    return updatedCollection as Collection;
+  } catch (error) {
+    console.error(`Error updating collection description for ${collectionId}:`, error);
     throw error;
   }
 }

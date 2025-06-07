@@ -74,7 +74,25 @@ export async function scrapeEmailForData(
   
   // Build collection descriptions for the prompt
   const collectionDescriptions = validCollections.map(collection => {
-    return `${collection.name}:\n    ${JSON.stringify(collection.docDataSchema)}`;
+    let description = `${collection.name}:`;
+    
+    // Add collection description if available
+    if (collection.description && collection.description.trim()) {
+      description += `\n  Description: ${collection.description}`;
+    }
+    
+    // Add field descriptions
+    description += `\n  Fields:`;
+    const schema = collection.docDataSchema;
+    for (const [fieldName, fieldSchema] of Object.entries(schema)) {
+      const field = fieldSchema as any;
+      description += `\n    - ${fieldName} (${field.type})`;
+      if (field.description && field.description.trim()) {
+        description += `: ${field.description}`;
+      }
+    }
+    
+    return description;
   }).join('\n\n');
   
   const prompt = `
