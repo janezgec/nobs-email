@@ -6,6 +6,7 @@ import type { Document } from '../models/document';
 import { listenToDatabases } from '../models/database';
 import { listenToCollections } from '../models/collection';
 import { getDocumentsForCollection } from '../models/document';
+import DocumentTable from './App/DocumentTable';
 
 const pb = getPB();
 
@@ -286,91 +287,8 @@ const App: FunctionalComponent = () => {
                   </div>
                   
                   {/* Data table */}
-                  <div className="flex-1 overflow-hidden p-6">
-                    {collectionData.length === 0 ? (
-                      <div className="flex items-center justify-center h-full">
-                        <div className="text-center">
-                          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">No data yet</h3>
-                          <p className="text-gray-500 max-w-sm">
-                            Send emails to this collection to see data appear here in real-time.
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden h-full">
-                        <div className="overflow-auto h-full">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  ID
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  User
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Collection
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Database
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Data
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Embeds
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Created
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Updated
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                              {collectionData.map((item, index) => (
-                                <tr key={item.id || index} className="hover:bg-gray-50">
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {item.id || 'N/A'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {item.user || 'N/A'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {item.collection || 'N/A'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {item.database || 'N/A'}
-                                  </td>
-                                  <td className="px-6 py-4 text-sm text-gray-900">
-                                    <pre className="whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded max-w-md overflow-auto max-h-32">
-                                      {JSON.stringify(item.data, null, 2)}
-                                    </pre>
-                                  </td>
-                                  <td className="px-6 py-4 text-sm text-gray-900">
-                                    <pre className="whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded max-w-md overflow-auto max-h-32">
-                                      {JSON.stringify(item.embeds, null, 2)}
-                                    </pre>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {item.created ? new Date(item.created).toLocaleString() : 'N/A'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {item.updated ? new Date(item.updated).toLocaleString() : 'N/A'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
+                  <div className="flex-1 overflow-hidden">
+                    <DocumentTable documents={collectionData} />
                   </div>
                 </>
               ) : (
