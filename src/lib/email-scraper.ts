@@ -7,17 +7,17 @@ dotenv.config({
 import { openrouter } from '@openrouter/ai-sdk-provider';
 import { generateObject } from 'ai';
 
+const model = openrouter('google/gemini-2.5-flash-preview', {
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
 async function dataToSchema(data: any, existingSchema?: any): Promise<any> {
   // call the AI model to convert data to schema
   if(!existingSchema) {
-    const prompt = `Convert the following data into a structured JSON schema.
-  The schema should define collections and their properties based on the data provided.
-  Here is the data:
+    const prompt = `Transform this data into JSON schema, do NOT make any properties required:
   ${JSON.stringify(data, null, 2)}`;
     const result = await generateObject({
-      model: openrouter('google/gemini-2.5-flash-preview', {
-        apiKey: process.env.OPENROUTER_API_KEY,
-      }),
+      model,
       output: 'no-schema',
       prompt,
     });
@@ -25,15 +25,13 @@ async function dataToSchema(data: any, existingSchema?: any): Promise<any> {
     return result.object;
   } else {
     // if existing schema is provided, update the schema with what is in data
-    const prompt = `Update the existing schema according to the new data provided.
+    const prompt = `Update the existing JSON schema according to the new data provided. Add new properties, enum values where necessary but don't remove anything.
   Existing schema:
   ${JSON.stringify(existingSchema, null, 2)}
   New data:
   ${JSON.stringify(data, null, 2)}`;
     const result = await generateObject({
-      model: openrouter('google/gemini-2.5-flash-preview', {
-        apiKey: process.env.OPENROUTER_API_KEY,
-      }),
+      model,
       output: 'no-schema',
       prompt,
     });
@@ -44,7 +42,7 @@ async function dataToSchema(data: any, existingSchema?: any): Promise<any> {
 export async function scrapeEmailForData(
   emailContent: string,
   schema: any = null
-): any {
+): Promise<{ data: any; schema: any }> {
   let prompt = `
         Extract from this email contents all the data you can find and return a json with it.
         Have root json properties as collection names and they contain arrays of items (documents).
@@ -60,9 +58,7 @@ export async function scrapeEmailForData(
   
   try {
     const result = await generateObject({
-      model: openrouter('google/gemini-2.5-flash-preview', {
-        apiKey: process.env.OPENROUTER_API_KEY,
-      }),
+      model,
       output: 'no-schema',
       prompt,
     });

@@ -53,12 +53,25 @@ export async function POST({ request }) {
     const collections = await getCollectionsForDatabase(pb, database.id, user.id);
     
     // Build schema from existing collections
-    const existingSchema = {};
-    collections.forEach(collection => {
-      if (collection.docDataSchema && collection.name !== 'emails') {
-        existingSchema[collection.name] = collection.docDataSchema;
+    const existingSchema = {
+      type: 'object',
+      properties: {}
+    };
+    for(let collection of collections) {
+      if(collection.name === 'emails') {
+        // Skip emails collection as it is handled separately
+        continue;
       }
-    });
+      if (collection.docDataSchema) {
+        existingSchema.properties[collection.name] = {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: collection.docDataSchema
+          }
+        };
+      }
+    }
 
     // insert email into database (skip if it already exists)
     const emailCollection = await ensureCollection(pb, user.id, database.id, 'emails');
@@ -78,8 +91,8 @@ export async function POST({ request }) {
     }
 
     
-    const { data, schema } = await scrapeEmailForData(emailContent, Object.keys(existingSchema).length > 0 ? existingSchema : null);
-    
+    const { data, schema } = await scrapeEmailForData(emailContent, collections.length > 1? existingSchema : null);
+
     // Process each collection in the scraped data
     if (data && typeof data === 'object') {
       for (const [collectionName, documents] of Object.entries(data)) {
@@ -87,11 +100,13 @@ export async function POST({ request }) {
           // Ensure collection exists
           const collection = await ensureCollection(pb, user.id, database.id, collectionName);
           
+          const collectionSchema = schema.properties[collection.name]?.items;
           // Update collection schema if it has changed
-          if (schema && schema[collectionName]) {
+          if (collectionSchema) {
+            collectionSchema.type = 'object';
             try {
               await pb.collection('collections').update(collection.id, {
-                docDataSchema: schema[collectionName]
+                docDataSchema: collectionSchema
               });
               console.log(`Updated schema for collection: ${collectionName}`);
             } catch (error) {
