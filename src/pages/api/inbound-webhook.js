@@ -39,7 +39,7 @@ export async function POST({ request }) {
     const user = await getUserByUsername(pb, username);
 
     // get database
-    const databaseName = getDatabaseFromEmail(email.from);
+    const databaseName = getDatabaseFromEmail(email.to);
     const database = await ensureDatabase(pb, user.id, databaseName);
     if (!database) {
       console.error('Database not found or could not be created');
