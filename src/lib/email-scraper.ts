@@ -1,9 +1,3 @@
-// use dotenv to load environment variables
-import dotenv from 'dotenv';
-dotenv.config({
-  path: '../../.env',
-});
-
 import { openrouter } from '@openrouter/ai-sdk-provider';
 import { generateObject } from 'ai';
 
