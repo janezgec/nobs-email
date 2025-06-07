@@ -5,6 +5,7 @@ import { ensureEmailCollection, getCollectionsForDatabase } from './../../models
 import { getPB, authSuperAdmin } from './../../lib/pb';
 import { getDocumentByDataProperty, insertDocument } from './../../models/document';
 import { scrapeEmailForData } from './../../lib/email-scraper';
+import TurndownService from 'turndown';
 
 function successResponse(email) {
   return new Response(JSON.stringify({
@@ -74,6 +75,16 @@ export async function POST({ request }) {
 
     // Scrape email content using predefined collection schemas
     let emailContent = email.htmlBody || email.textBody || '';
+    
+    // Convert HTML to markdown for better processing
+    if (email.htmlBody) {
+      const turndownService = new TurndownService({
+        headingStyle: 'atx',
+        bulletListMarker: '-',
+        codeBlockStyle: 'fenced'
+      });
+      emailContent = turndownService.turndown(email.htmlBody);
+    }
     
     if(!emailContent) {
       console.error('No HTML or text content found in email');
