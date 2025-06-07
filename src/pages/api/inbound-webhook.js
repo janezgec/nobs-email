@@ -41,11 +41,18 @@ export async function POST({ request }) {
 
     // get database
     const databaseName = getDatabaseFromEmail(email.to);
+    if(!databaseName) {
+      console.error('Database name could not be determined from email');
+      return new Response(JSON.stringify({ error: 'Database name not found' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     const database = await ensureDatabase(pb, user.id, databaseName);
     if (!database) {
       console.error('Database not found or could not be created');
-      return new Response(JSON.stringify({ error: 'Database not found' }), {
-        status: 404,
+      return new Response(JSON.stringify({ error: 'Database name not found' }), {
+        status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
     }
