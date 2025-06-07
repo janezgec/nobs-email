@@ -73,16 +73,7 @@ export async function POST({ request }) {
     const emailPB = await insertDocument(pb, user.id, database.id, emailCollection.id, emailData);
 
     // Scrape email content using predefined collection schemas
-    let emailContent = '';
-    if(email.htmlBody) {
-      // only extract body html (no head)
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(email.htmlBody, 'text/html');
-      const body = doc.querySelector('body');
-      emailContent = body ? body.innerHTML : email.htmlBody;
-    } else {
-      emailContent = email.textBody || '';
-    }
+    let emailContent = email.htmlBody || email.textBody || '';
     
     if(!emailContent) {
       console.error('No HTML or text content found in email');
