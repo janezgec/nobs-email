@@ -64,6 +64,9 @@ const CreateDatabaseModal: FunctionalComponent<CreateDatabaseModalProps> = ({
             <label htmlFor="database-name" className="block text-sm font-medium text-gray-700 mb-2">
               Database Name
             </label>
+            <p className="text-sm text-gray-500 mb-2">
+              You might have one for work related emails, or for a specific topic or interest. You can always create more later.
+            </p>
             <input
               id="database-name"
               type="text"
