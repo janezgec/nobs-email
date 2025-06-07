@@ -10,6 +10,8 @@ const { SERVER_ALLOWED_HOSTS } = loadEnv(String(process.env.NODE_ENV), process.c
 
 // https://astro.build/config
 export default defineConfig({
+  output: 'server',
+  
   server: {
     port: 3000
   },
