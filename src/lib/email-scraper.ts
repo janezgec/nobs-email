@@ -63,7 +63,17 @@ export async function scrapeEmailForData(
       prompt,
     });
 
-    const newSchema = await dataToSchema(result.object, schema);
+    const data = result.object || {};
+
+    // clean up collections that shouldn't be there
+    const unwantedCollections = ['email', 'emails', 'email_content', 'email_contents'];
+    for (const collection of unwantedCollections) {
+      if (data[collection]) {
+        delete data[collection];
+      }
+    }
+
+    const newSchema = await dataToSchema(data, schema);
     
     return {
       data: result.object,
