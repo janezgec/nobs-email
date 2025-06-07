@@ -3,7 +3,7 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 import type { Collection } from '../models/collection';
 
-const model = openrouter('google/gemini-2.5-flash-preview', {
+const model = openrouter('google/gemini-2.5-pro-preview', {
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
@@ -74,23 +74,22 @@ export async function scrapeEmailForData(
   
   // Build collection descriptions for the prompt
   const collectionDescriptions = validCollections.map(collection => {
-    const fields = Object.entries(collection.docDataSchema).map(([name, schema]: [string, any]) => {
-      const description = schema.description ? ` (${schema.description})` : '';
-      return `- ${name}: ${schema.type}${description}`;
-    }).join('\n    ');
-    
-    return `${collection.name}:\n    ${fields}`;
+    return `${collection.name}:\n    ${JSON.stringify(collection.docDataSchema)}`;
   }).join('\n\n');
   
   const prompt = `
-Extract data from this email content and organize it according to the predefined collections and their schemas.
+Extract all data from this email content and organize it according to the predefined collections and their schemas.
 Only extract data that fits the defined collections and their field types. Do not create new collections or fields.
 
 Available Collections and their schemas:
+<COLLECTIONS>
 ${collectionDescriptions}
+</COLLECTIONS>
 
 Email Content:
+<EMAIL_CONTENT>
 ${emailContent}
+</EMAIL_CONTENT>
 
 Return a JSON object where each collection name is a key containing an array of objects that match the collection's schema.
 Only include collections that have relevant data extracted from the email.
