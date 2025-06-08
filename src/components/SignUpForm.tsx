@@ -40,6 +40,7 @@ export default function SignUpForm() {
         email: drowningEmail,
         username: nobsUsername,
         emailVisibility: true,
+        creditBalance: 100,
         password: password,
         passwordConfirm: password,
       };

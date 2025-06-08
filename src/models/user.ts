@@ -5,6 +5,7 @@ export interface User extends RecordModel {
   id: string;
   email: string;
   username: string;
+  creditBalance?: number;
 }
 
 export interface ValidationResult {
@@ -47,6 +48,21 @@ export async function getUserByUsername(pb: PocketBase, username: string): Promi
     return user as User;
   } catch (error) {
     console.error(`Error fetching user by username ${username}:`, error);
+    throw error;
+  }
+}
+
+export async function decrementUserCreditBalance(pb: PocketBase, userId: string): Promise<User> {
+  try {
+    const user = await pb.collection('users').update(userId, {
+      'creditBalance-': 1
+    });
+    return user as User;
+  } catch (error: any) {
+    if (error.message?.includes('creditBalance') || error.status === 400) {
+      throw new Error('Insufficient credit balance. User has reached 0 credits.');
+    }
+    console.error(`Error decrementing credit balance for user ${userId}:`, error);
     throw error;
   }
 }

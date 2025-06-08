@@ -3,7 +3,7 @@ import { getPB, authSuperAdmin } from '../../lib/pb';
 import { getCollectionsForDatabase } from '../../models/collection';
 import { scrapeEmailForData } from '../../lib/email-scraper';
 import { insertDocument } from '../../models/document';
-import { useQuota, QuotaExceededError } from '../../models/quota';
+import { decrementUserCreditBalance } from '../../models/user';
 import TurndownService from 'turndown';
 
 export async function POST({ request }) {
@@ -77,21 +77,18 @@ export async function POST({ request }) {
 
     let processedCount = 0;
     let extractedCount = 0;
-    let skippedQuotaCount = 0;
+    let skippedBalanceCount = 0;
 
     // Process each email
     for (const emailDoc of emails) {
       try {
-        // Check quota before processing each email
+        // Check balance and decrement before processing each email
         try {
-          await useQuota(pb, userId);
+          await decrementUserCreditBalance(pb, userId);
         } catch (error) {
-          if (error instanceof QuotaExceededError) {
-            console.log(`Quota exceeded for user ${userId}, skipping remaining emails`);
-            skippedQuotaCount = emails.length - processedCount;
-            break;
-          }
-          throw error;
+          console.log(`Insufficient balance for user ${userId}, skipping remaining emails`);
+          skippedBalanceCount = emails.length - processedCount;
+          break;
         }
 
         const emailData = emailDoc.data;
@@ -158,7 +155,7 @@ export async function POST({ request }) {
       processedEmails: processedCount,
       extractedDocuments: extractedCount,
       totalEmails: emails.length,
-      skippedQuotaCount: skippedQuotaCount
+      skippedBalanceCount: skippedBalanceCount
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
