@@ -53,21 +53,21 @@ export async function POST({ request }) {
     
     // add collection for news
     await createCollection(pb, userId, database.id, 'news', [
-      { name: 'image', type: 'url', description: 'News image' },
+      { name: 'image', type: 'string', format: 'uri', description: 'News image' },
       { name: 'title', type: 'string', description: 'News title' },
-      { name: 'link', type: 'url', description: 'Link to the news article' },
+      { name: 'link', type: 'string', format: 'uri', description: 'Link to the news article' },
       { name: 'summary', type: 'string', description: 'News summary' }
     ], 'Collect all news from emails, no matter how small.');
 
     await createCollection(pb, userId, database.id, 'people_mentions', [
       { name: 'name', type: 'string', description: 'Name of the person mentioned' },
       { name: 'company', type: 'string', description: 'Company where they work if available' },
-      { name: 'link', type: 'string', description: 'Link associated' },
+      { name: 'link', type: 'string', format: 'uri', description: 'Link associated' },
       { name: 'context', type: 'string', description: 'Context in which the person was mentioned' }
     ], 'Collect mentions of people in emails, when they said something, did something.');
 
     await createCollection(pb, userId, database.id, 'images', [
-      { name: 'image', type: 'url', description: 'Image URL' },
+      { name: 'image', type: 'string', format: 'uri', description: 'Image URL' },
       { name: 'description', type: 'string', description: 'Description of the image based on the context' }
     ], 'Collect images from emails, no matter how small.');
 
