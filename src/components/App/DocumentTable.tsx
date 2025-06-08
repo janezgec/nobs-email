@@ -94,7 +94,7 @@ const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ user, database
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No data yet</h3>
           <p className="text-gray-500 max-w-sm">
-            Send emails to <span className="text-purple-600">{user?.username}+{database?.name}@nobs.email</span> to start scraping data in real-time.
+            Send emails to <span className="text-sky-600">{user?.username}+{database?.name}@nobs.email</span> to start scraping data in real-time.
           </p>
         </div>
       </div>

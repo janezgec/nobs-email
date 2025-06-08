@@ -69,7 +69,7 @@ export default function SignInForm({}: SignInFormProps) {
           <div className="text-4xl">✨</div>
           <h2 className="text-xl font-semibold text-gray-800">Magic link sent!</h2>
           <p className="text-gray-600">
-            We've sent a magic link to <span className="font-medium text-blue-600">{email}</span>. 
+            We've sent a magic link to <span className="font-medium text-cyan-600">{email}</span>. 
             Check your inbox and click the link to sign in.
           </p>
         </div>
@@ -98,7 +98,7 @@ export default function SignInForm({}: SignInFormProps) {
             className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none transition-colors ${
               status === 'error' 
                 ? 'border-red-300 focus:border-red-500' 
-                : 'border-blue-300 focus:border-blue-500'
+                : 'border-blue-300 focus:border-cyan-500'
             }`}
             disabled={status === 'loading'}
           />
@@ -123,7 +123,7 @@ export default function SignInForm({}: SignInFormProps) {
               className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none transition-colors ${
                 status === 'error' 
                   ? 'border-red-300 focus:border-red-500' 
-                  : 'border-blue-300 focus:border-blue-500'
+                  : 'border-blue-300 focus:border-cyan-500'
               }`}
               disabled={status === 'loading'}
             />
@@ -137,7 +137,7 @@ export default function SignInForm({}: SignInFormProps) {
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white border-2 border-blue-600 rounded-lg px-6 py-3 font-semibold hover:from-blue-700 hover:to-purple-700 hover:cursor-pointer transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-cyan-600 to-sky-600 text-white border-2 border-cyan-600 rounded-lg px-6 py-3 font-semibold hover:from-cyan-700 hover:to-sky-700 hover:cursor-pointer transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed"
         >
           {status === 'loading' 
             ? (signInMethod === 'magic-link' ? '✨ Sending magic link...' : '🔐 Signing in...') 
@@ -155,7 +155,7 @@ export default function SignInForm({}: SignInFormProps) {
             setErrorMessage('');
             setPassword('');
           }}
-          className="text-blue-600 hover:text-blue-800 text-sm underline transition-colors"
+          className="text-cyan-600 hover:text-cyan-800 text-sm underline transition-colors"
         >
           {signInMethod === 'magic-link' 
             ? 'Click here to sign in with password' 

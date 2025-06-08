@@ -54,7 +54,7 @@ export default function Header({ currentPath }: HeaderProps) {
     return (
       <header className="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto">
         <div className="text-lg sm:text-xl font-bold">NoBS.email</div>
-        <div className="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium">
+        <div className="bg-transparent text-cyan-600 border-2 border-cyan-600 rounded-lg px-4 py-2 font-medium">
           Loading...
         </div>
       </header>
@@ -78,7 +78,7 @@ export default function Header({ currentPath }: HeaderProps) {
       ) : (
         <a
           href={currentPath === '/' ? '/sign-in' : '/'}
-          className="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium hover:bg-blue-400 hover:text-white hover:cursor-pointer transition-colors"
+          className="bg-transparent text-cyan-600 border-2 border-cyan-600 rounded-lg px-4 py-2 font-medium hover:bg-cyan-400 hover:text-white hover:cursor-pointer transition-colors"
         >
           {currentPath === '/' ? 'Sign in' : 'Back to Home'}
         </a>

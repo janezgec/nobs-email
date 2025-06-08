@@ -69,7 +69,7 @@ const CreateDatabaseModal: FunctionalComponent<CreateDatabaseModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName((e.target as HTMLInputElement).value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               placeholder="Enter database name..."
               disabled={isLoading}
               autoFocus
@@ -96,7 +96,7 @@ const CreateDatabaseModal: FunctionalComponent<CreateDatabaseModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-cyan-600 text-white hover:bg-cyan-700 rounded-md transition-colors disabled:opacity-50"
               disabled={isLoading || !name.trim()}
             >
               {isLoading ? 'Creating...' : 'Create Database'}

@@ -328,7 +328,7 @@ const App: FunctionalComponent = () => {
           </p>
           <button
             onClick={() => setShowCreateDatabaseModal(true)}
-            className="px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-cyan-600 text-white font-medium rounded-lg hover:bg-cyan-700 transition-colors"
           >
             Create Database
           </button>
@@ -353,8 +353,8 @@ const App: FunctionalComponent = () => {
                 onClick={() => setSelectedTab(database.id)}
                 className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors duration-200 select-text ${
                   selectedTab === database.id
-                  ? 'bg-blue-500 text-white shadow-lg'
-                  : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                  ? 'bg-cyan-600 text-white shadow-lg'
+                  : 'text-cyan-600 hover:text-cyan-800 hover:bg-cyan-50'
                 }`}
                 >
                 {user?.username}+{database.name || database.id}@nobs.email
@@ -368,7 +368,7 @@ const App: FunctionalComponent = () => {
                       setCopiedDatabase(database.id);
                       setTimeout(() => setCopiedDatabase(null), 2000);
                     }}
-                    className="w-5 h-5 bg-blue-500 text-white text-xs rounded-full hover:bg-blue-400 flex items-center justify-center"
+                    className="w-5 h-5 bg-cyan-600 text-white text-xs rounded-full hover:bg-cyan-400 flex items-center justify-center"
                     title="Copy email address"
                   >
                     {copiedDatabase === database.id ? (
@@ -390,7 +390,7 @@ const App: FunctionalComponent = () => {
           ))}
           <button
             onClick={() => setShowCreateDatabaseModal(true)}
-            className="px-4 py-3 font-medium text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-t-lg transition-colors duration-200"
+            className="px-4 py-3 font-medium text-sm text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-t-lg transition-colors duration-200"
             title="Create new database"
           >
             +
@@ -400,16 +400,16 @@ const App: FunctionalComponent = () => {
       
       {/* Reprocess prompt banner */}
       {showReprocessPrompt && selectedTab && (
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-md">
+        <div className="bg-cyan-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-md">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-cyan-400" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-cyan-700">
                   <span className="font-medium">Collection schema updated!</span>
                   {' '}Would you like to re-process all past emails in this database to extract data using the new schema?
                 </p>
@@ -419,7 +419,7 @@ const App: FunctionalComponent = () => {
               <button
                 onClick={handleReprocessEmails}
                 disabled={isReprocessing}
-                className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isReprocessing ? 'Processing...' : 'Yes, Re-process'}
               </button>
@@ -454,7 +454,7 @@ const App: FunctionalComponent = () => {
                 <h3 className="text-lg font-semibold text-gray-800">Collections</h3>
                 <button
                   onClick={() => setShowCreateCollectionModal(true)}
-                  className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700 transition-colors"
+                  className="text-xs px-2 py-1 bg-cyan-600 text-white rounded hover:bg-cyan-700 transition-colors"
                   title="Create new collection"
                 >
                   + Add
@@ -482,7 +482,7 @@ const App: FunctionalComponent = () => {
                           onClick={() => setSelectedCollection(collection.id)}
                           className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                             selectedCollection === collection.id
-                              ? 'bg-blue-500 text-white shadow-sm'
+                              ? 'bg-cyan-600 text-white shadow-sm'
                               : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                           }`}
                         >

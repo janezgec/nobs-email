@@ -101,7 +101,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
               id="collection-description"
               value={description}
               onChange={(e) => setDescription((e.target as HTMLTextAreaElement).value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               placeholder="Describe what this collection is for (helps AI understand the data)..."
               rows={3}
               disabled={isLoading}
@@ -135,7 +135,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
                           type="text"
                           value={field.name}
                           onChange={(e) => updateField(index, { name: (e.target as HTMLInputElement).value })}
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-cyan-500"
                           placeholder="Column name..."
                           disabled={isLoading}
                         />
@@ -144,7 +144,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
                         <select
                           value={field.type}
                           onChange={(e) => updateField(index, { type: (e.target as HTMLSelectElement).value as SchemaField['type'] })}
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-cyan-500"
                           disabled={isLoading}
                         >
                           <option value="string">Text</option>
@@ -171,7 +171,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
                         type="text"
                         value={field.description || ''}
                         onChange={(e) => updateField(index, { description: (e.target as HTMLInputElement).value })}
-                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-cyan-500"
                         placeholder="Description (optional)..."
                         disabled={isLoading}
                       />
@@ -199,7 +199,7 @@ const EditSchemaModal: FunctionalComponent<EditSchemaModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-cyan-600 text-white hover:bg-cyan-700 rounded-md transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
               {isLoading ? 'Saving...' : 'Save Changes'}

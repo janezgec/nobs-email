@@ -78,7 +78,7 @@ const TableCellValue: FunctionalComponent<TableCellValueProps> = ({
               return (
                 <a 
                   href={`mailto:${value}`}
-                  className="text-blue-600 hover:text-blue-800 underline text-xs break-all"
+                  className="text-cyan-600 hover:text-cyan-800 underline text-xs break-all"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {value}
@@ -109,7 +109,7 @@ const TableCellValue: FunctionalComponent<TableCellValueProps> = ({
                       const target = e.target as HTMLImageElement;
                       const parent = target.parentElement;
                       if (parent) {
-                        parent.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline text-xs break-all">${getShortenedUrl(value)}</a>`;
+                        parent.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-cyan-600 hover:text-cyan-800 underline text-xs break-all">${getShortenedUrl(value)}</a>`;
                       }
                     }}
                   />
@@ -138,7 +138,7 @@ const TableCellValue: FunctionalComponent<TableCellValueProps> = ({
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 underline text-xs break-all"
+                  className="text-cyan-600 hover:text-cyan-800 underline text-xs break-all"
                   onClick={(e) => e.stopPropagation()}
                   title={value}
                 >
@@ -183,7 +183,7 @@ const TableCellValue: FunctionalComponent<TableCellValueProps> = ({
                       e.stopPropagation();
                       setShowHtmlModal(true);
                     }}
-                    className="text-blue-600 hover:text-blue-800 underline text-xs cursor-pointer"
+                    className="text-cyan-600 hover:text-cyan-800 underline text-xs cursor-pointer"
                   >
                     View HTML
                   </button>
@@ -229,7 +229,7 @@ const TableCellValue: FunctionalComponent<TableCellValueProps> = ({
                         e.stopPropagation();
                         setShowTextModal(true);
                       }}
-                      className="text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                      className="text-cyan-600 hover:text-cyan-800 underline cursor-pointer"
                     >
                       Read more
                     </button>

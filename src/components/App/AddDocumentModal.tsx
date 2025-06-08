@@ -118,7 +118,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
             type="number"
             value={value}
             onChange={(e) => updateField(field.name, (e.target as HTMLInputElement).value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             disabled={isLoading}
           />
         );
@@ -127,7 +127,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
           <select
             value={value ? 'true' : 'false'}
             onChange={(e) => updateField(field.name, (e.target as HTMLSelectElement).value === 'true')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             disabled={isLoading}
           >
             <option value="false">False</option>
@@ -140,7 +140,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
             type="datetime-local"
             value={value ? new Date(value).toISOString().slice(0, 16) : ''}
             onChange={(e) => updateField(field.name, (e.target as HTMLInputElement).value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             disabled={isLoading}
           />
         );
@@ -150,7 +150,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
             type="email"
             value={value}
             onChange={(e) => updateField(field.name, (e.target as HTMLInputElement).value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             disabled={isLoading}
           />
         );
@@ -160,7 +160,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
             type="url"
             value={value}
             onChange={(e) => updateField(field.name, (e.target as HTMLInputElement).value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             disabled={isLoading}
           />
         );
@@ -170,7 +170,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
             type="text"
             value={value}
             onChange={(e) => updateField(field.name, (e.target as HTMLInputElement).value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             disabled={isLoading}
           />
         );
@@ -234,7 +234,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-cyan-600 text-white hover:bg-cyan-700 rounded-md transition-colors disabled:opacity-50"
                 disabled={isLoading}
               >
                 {isLoading ? 'Adding...' : 'Add Document'}
