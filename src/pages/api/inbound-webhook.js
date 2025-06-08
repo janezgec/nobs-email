@@ -35,7 +35,7 @@ export async function POST({ request }) {
     }
     
     const email = postmarkPayloadToEmailData(body);
-    const username = getUsernameFromEmail(email.from);
+    const username = getUsernameFromEmail(email.to);
 
     // get user
     const user = await getUserByUsername(pb, username);

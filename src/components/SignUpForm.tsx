@@ -132,7 +132,9 @@ export default function SignUpForm() {
               type="text"
               value={nobsUsername}
               onInput={(e) => {
-                setNobsUsername((e.target as HTMLInputElement).value);
+                const rawValue = (e.target as HTMLInputElement).value;
+                const cleanValue = rawValue.toLowerCase().replace(/[^a-z0-9]/g, '');
+                setNobsUsername(cleanValue);
                 if (status === 'error') {
                   setStatus('idle');
                 }
