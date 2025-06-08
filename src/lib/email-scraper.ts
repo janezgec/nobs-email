@@ -2,9 +2,10 @@ import { openrouter } from '@openrouter/ai-sdk-provider';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import type { Collection } from '../models/collection';
+import { getVariable } from './../lib/env.ts';
 
 const model = openrouter('google/gemini-2.5-flash-preview', {
-  apiKey: import.meta.env.OPENROUTER_API_KEY,
+  apiKey: getVariable('OPENROUTER_API_KEY'),
   temperature: 0.6
 });
 

@@ -1,11 +1,12 @@
 import PocketBase from 'pocketbase';
 import type { RecordAuthResponse } from 'pocketbase';
+import { getVariable } from './../lib/env.ts';
 
 let pb: null|PocketBase = null;
 
 export function getPB(): PocketBase {
   if (!pb) {
-    pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL);
+    pb = new PocketBase(getVariable('PUBLIC_POCKETBASE_URL'));
     pb.autoCancellation(false);
   }
   return pb;
@@ -14,8 +15,8 @@ export function getPB(): PocketBase {
 export async function authSuperAdmin(pb: PocketBase): Promise<RecordAuthResponse> {
   try {
     const authData = await pb.collection('_superusers').authWithPassword(
-      import.meta.env.POCKETBASE_ADMIN_USERNAME!,
-      import.meta.env.POCKETBASE_ADMIN_PASSWORD!
+      getVariable('POCKETBASE_ADMIN_USERNAME'),
+      getVariable('POCKETBASE_ADMIN_PASSWORD')
     );
     return authData;
   } catch (error) {

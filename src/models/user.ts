@@ -1,5 +1,6 @@
 import PocketBase from 'pocketbase';
 import type { RecordModel, RecordAuthResponse } from 'pocketbase';
+import { getVariable } from './../lib/env.ts';
 
 export interface User extends RecordModel {
   id: string;
@@ -16,7 +17,7 @@ export interface ValidationResult {
 
 export async function validateUserToken(token: string): Promise<ValidationResult> {
   // ensure we are dealing with a new pocketbase instance every time (security)
-  const pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL);
+  const pb = new PocketBase(getVariable('PUBLIC_POCKETBASE_URL'));
   try {
     pb.authStore.save(token);
     const user = await pb.collection('users').authRefresh();
