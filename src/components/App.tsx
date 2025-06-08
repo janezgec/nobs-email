@@ -423,7 +423,15 @@ const App: FunctionalComponent = () => {
                   </div>
                 ) : (
                   <div className="p-2 space-y-1">
-                    {collections.map((collection) => (
+                    {collections
+                      .sort((a, b) => {
+                        // Always put "emails" collection first
+                        if (a.name === 'emails') return -1;
+                        if (b.name === 'emails') return 1;
+                        // Sort everything else alphabetically
+                        return a.name.localeCompare(b.name);
+                      })
+                      .map((collection) => (
                       <div key={collection.id} className="relative group">
                         <button
                           onClick={() => setSelectedCollection(collection.id)}
@@ -434,24 +442,23 @@ const App: FunctionalComponent = () => {
                           }`}
                         >
                           <div className="truncate">{collection.name}</div>
-                          <div className="text-xs opacity-75 truncate">
-                            {new Date(collection.created).toLocaleDateString()}
-                          </div>
                         </button>
                         {selectedCollection === collection.id && (
                           <div className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <div className="flex space-x-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedCollection(collection.id);
-                                  setShowEditSchemaModal(true);
-                                }}
-                                className="w-5 h-5 bg-gray-700 text-white text-xs rounded hover:bg-gray-800"
-                                title="Edit schema"
-                              >
-                                ⚙
-                              </button>
+                              {collection.name !== 'emails' && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedCollection(collection.id);
+                                    setShowEditSchemaModal(true);
+                                  }}
+                                  className="w-5 h-5 bg-gray-700 text-white text-xs rounded hover:bg-gray-800"
+                                  title="Edit schema"
+                                >
+                                  ⚙
+                                </button>
+                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -484,7 +491,7 @@ const App: FunctionalComponent = () => {
                           {collections.find(c => c.id === selectedCollection)?.name}
                         </h2>
                         <p className="text-sm text-gray-500 mt-1">
-                          {collectionData.length} documents
+                          {collectionData.length} records
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
