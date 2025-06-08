@@ -4,7 +4,8 @@ import { z } from 'zod';
 import type { Collection } from '../models/collection';
 
 const model = openrouter('google/gemini-2.5-flash-preview', {
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: import.meta.env.OPENROUTER_API_KEY,
+  temperature: 0.6
 });
 
 // Convert collection schema to Zod schema for AI SDK
