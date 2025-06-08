@@ -62,7 +62,7 @@ export async function POST({ request }) {
     await createCollection(pb, userId, database.id, 'people_mentions', [
       { name: 'name', type: 'string', description: 'Name of the person mentioned' },
       { name: 'company', type: 'string', description: 'Company where they work if available' },
-      { name: 'link', type: 'string', description: 'Link associated' },
+      { name: 'link', type: 'url', description: 'Link associated' },
       { name: 'context', type: 'string', description: 'Context in which the person was mentioned' }
     ], 'Collect mentions of people in emails, when they said something, did something.');
 
