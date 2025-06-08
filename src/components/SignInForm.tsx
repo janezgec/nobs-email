@@ -7,8 +7,10 @@ interface SignInFormProps {}
 
 export default function SignInForm({}: SignInFormProps) {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [signInMethod, setSignInMethod] = useState<'magic-link' | 'password'>('magic-link');
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,16 +32,33 @@ export default function SignInForm({}: SignInFormProps) {
       return;
     }
 
+    if (signInMethod === 'password' && !password.trim()) {
+      setStatus('error');
+      setErrorMessage('Please enter your password');
+      return;
+    }
+
     setStatus('loading');
     
     try {
-      // Request OTP via email
-      await pb.collection('users').requestOTP(email);
-      setStatus('success');
+      if (signInMethod === 'magic-link') {
+        // Request OTP via email
+        await pb.collection('users').requestOTP(email);
+        setStatus('success');
+      } else {
+        // Sign in with email and password
+        await pb.collection('users').authWithPassword(email, password);
+        // Redirect to /app on successful authentication
+        window.location.href = '/app';
+      }
     } catch (error) {
-      console.error('Error sending OTP:', error);
+      console.error('Error during authentication:', error);
       setStatus('error');
-      setErrorMessage('Failed to send magic link. Please try again.');
+      if (signInMethod === 'magic-link') {
+        setErrorMessage('Failed to send magic link. Please try again.');
+      } else {
+        setErrorMessage('Invalid email or password. Please try again.');
+      }
     }
   };
 
@@ -83,19 +102,67 @@ export default function SignInForm({}: SignInFormProps) {
             }`}
             disabled={status === 'loading'}
           />
-          {status === 'error' && (
-            <p className="text-red-600 text-sm mt-2">{errorMessage}</p>
-          )}
         </div>
+
+        {signInMethod === 'password' && (
+          <div>
+            <label className="block text-sm mb-2 font-medium text-gray-700">
+              Password:
+            </label>
+            <input
+              type="password"
+              value={password}
+              onInput={(e) => {
+                setPassword((e.target as HTMLInputElement).value);
+                if (status === 'error') {
+                  setStatus('idle');
+                  setErrorMessage('');
+                }
+              }}
+              placeholder="Enter your password"
+              className={`w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none transition-colors ${
+                status === 'error' 
+                  ? 'border-red-300 focus:border-red-500' 
+                  : 'border-blue-300 focus:border-blue-500'
+              }`}
+              disabled={status === 'loading'}
+            />
+          </div>
+        )}
+
+        {status === 'error' && (
+          <p className="text-red-600 text-sm">{errorMessage}</p>
+        )}
 
         <button
           type="submit"
           disabled={status === 'loading'}
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white border-2 border-blue-600 rounded-lg px-6 py-3 font-semibold hover:from-blue-700 hover:to-purple-700 hover:cursor-pointer transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed"
         >
-          {status === 'loading' ? '✨ Sending magic link...' : '✨ Send magic link'}
+          {status === 'loading' 
+            ? (signInMethod === 'magic-link' ? '✨ Sending magic link...' : '🔐 Signing in...') 
+            : (signInMethod === 'magic-link' ? '✨ Send magic link' : '🔐 Sign in with password')
+          }
         </button>
       </form>
+
+      <div className="mt-4 text-center">
+        <button
+          type="button"
+          onClick={() => {
+            setSignInMethod(signInMethod === 'magic-link' ? 'password' : 'magic-link');
+            setStatus('idle');
+            setErrorMessage('');
+            setPassword('');
+          }}
+          className="text-blue-600 hover:text-blue-800 text-sm underline transition-colors"
+        >
+          {signInMethod === 'magic-link' 
+            ? 'Click here to sign in with password' 
+            : 'Click here to sign in with magic link'
+          }
+        </button>
+      </div>
     </div>
   );
 }

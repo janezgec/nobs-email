@@ -1,13 +1,30 @@
 import { useMemo } from 'preact/hooks';
 import type { FunctionalComponent } from 'preact';
 import type { Document } from '../../models/document';
+import type { Collection } from '../../models/collection';
+import { jsonSchemaToSchemaFields } from '../../models/collection';
 import TableCellValue from './TableCellValue';
 
 interface DocumentTableProps {
   documents: Document[];
+  collection: Collection | null;
 }
 
-const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents }) => {
+const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents, collection }) => {
+  // Get schema information from collection
+  const schemaFields = useMemo(() => {
+    if (!collection?.docDataSchema) return [];
+    return jsonSchemaToSchemaFields(collection.docDataSchema);
+  }, [collection]);
+
+  // Create a lookup map for field types
+  const fieldTypeMap = useMemo(() => {
+    const map: Record<string, 'string' | 'number' | 'boolean' | 'date' | 'email' | 'url'> = {};
+    schemaFields.forEach(field => {
+      map[field.name] = field.type;
+    });
+    return map;
+  }, [schemaFields]);
   // Helper function to get relative time
   const getRelativeTime = (dateString: string): string => {
     const now = new Date();
@@ -115,15 +132,19 @@ const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents }) =
                     key={column}
                     className="px-6 py-4 text-xs text-gray-900"
                   >
-                    <TableCellValue value={item.data?.[column]} />
+                    <TableCellValue 
+                      value={item.data?.[column]} 
+                      type={fieldTypeMap[column] || 'string'}
+                    />
                   </td>
                 ))}
                 {/* Created date column */}
                 <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                   {item.created ? (
-                    <span title={new Date(item.created).toLocaleString()}>
-                      {getRelativeTime(item.created)}
-                    </span>
+                    <TableCellValue 
+                      value={item.created} 
+                      type="date"
+                    />
                   ) : (
                     'N/A'
                   )}

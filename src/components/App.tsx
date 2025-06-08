@@ -497,7 +497,10 @@ const App: FunctionalComponent = () => {
                   
                   {/* Data table */}
                   <div className="flex-1 overflow-hidden">
-                    <DocumentTable documents={collectionData} />
+                    <DocumentTable 
+                      documents={collectionData} 
+                      collection={collections.find(c => c.id === selectedCollection) || null} 
+                    />
                   </div>
                 </>
               ) : (
