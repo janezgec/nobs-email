@@ -5,7 +5,7 @@ let pb: null|PocketBase = null;
 
 export function getPB(): PocketBase {
   if (!pb) {
-    pb = new PocketBase(typeof process === 'undefined'? import.meta.env.PUBLIC_POCKETBASE_URL! : process.env.PUBLIC_POCKETBASE_URL);
+    pb = new PocketBase(import.meta.env.PUBLIC_POCKETBASE_URL);
     pb.autoCancellation(false);
   }
   return pb;
@@ -14,8 +14,8 @@ export function getPB(): PocketBase {
 export async function authSuperAdmin(pb: PocketBase): Promise<RecordAuthResponse> {
   try {
     const authData = await pb.collection('_superusers').authWithPassword(
-      process.env.POCKETBASE_ADMIN_USERNAME!,
-      process.env.POCKETBASE_ADMIN_PASSWORD!
+      import.meta.env.POCKETBASE_ADMIN_USERNAME!,
+      import.meta.env.POCKETBASE_ADMIN_PASSWORD!
     );
     return authData;
   } catch (error) {

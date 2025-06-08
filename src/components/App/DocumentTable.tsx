@@ -1,5 +1,7 @@
 import { useMemo } from 'preact/hooks';
 import type { FunctionalComponent } from 'preact';
+import type { User } from '../../models/user';
+import type { Database } from '../../models/database';
 import type { Document } from '../../models/document';
 import type { Collection } from '../../models/collection';
 import { jsonSchemaToSchemaFields } from '../../models/collection';
@@ -8,9 +10,11 @@ import TableCellValue from './TableCellValue';
 interface DocumentTableProps {
   documents: Document[];
   collection: Collection | null;
+  database: Database | null;
+  user: User | null;
 }
 
-const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents, collection }) => {
+const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ user, database, documents, collection }) => {
   // Get schema information from collection
   const schemaFields = useMemo(() => {
     if (!collection?.docDataSchema) return [];
@@ -90,7 +94,7 @@ const DocumentTable: FunctionalComponent<DocumentTableProps> = ({ documents, col
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No data yet</h3>
           <p className="text-gray-500 max-w-sm">
-            Send emails to this collection to see data appear here in real-time.
+            Send emails to <span className="text-purple-600">{user?.username}+{database?.name}@nobs.email</span> to start scraping data in real-time.
           </p>
         </div>
       </div>

@@ -1,11 +1,11 @@
-import { postmarkPayloadToEmailData, getUsernameFromEmail, getDatabaseFromEmail } from './../../lib/email-parser';
-import { getUserByUsername } from './../../models/user';
-import { ensureDatabase } from './../../models/database';
-import { ensureEmailCollection, getCollectionsForDatabase } from './../../models/collection';
-import { getPB, authSuperAdmin } from './../../lib/pb';
-import { getDocumentByDataProperty, insertDocument } from './../../models/document';
-import { scrapeEmailForData } from './../../lib/email-scraper';
-import { decrementUserCreditBalance } from './../../models/user';
+import { postmarkPayloadToEmailData, getUsernameFromEmail, getDatabaseFromEmail } from '../../lib/email-parser';
+import { getUserByUsername } from '../../models/user';
+import { ensureDatabase } from '../../models/database';
+import { ensureEmailCollection, getCollectionsForDatabase } from '../../models/collection';
+import { getPB, authSuperAdmin } from '../../lib/pb';
+import { getDocumentByDataProperty, insertDocument } from '../../models/document';
+import { scrapeEmailForData } from '../../lib/email-scraper';
+import { decrementUserCreditBalance } from '../../models/user';
 import TurndownService from 'turndown';
 
 function successResponse(email) {
@@ -26,7 +26,7 @@ export async function POST({ request }) {
   try {
     const body = await request.json();
     const url = new URL(request.url);
-    if (url.searchParams.get('secret') !== process.env.POSTMARK_WEBHOOK_SECRET) {
+    if (url.searchParams.get('secret') !== import.meta.env.POSTMARK_WEBHOOK_SECRET) {
       console.error('Invalid Postmark webhook secret');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,

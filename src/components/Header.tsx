@@ -67,7 +67,7 @@ export default function Header({ currentPath }: HeaderProps) {
       
       {user ? (
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium">{user.username}@nobs.email</span>
+          <span className="text-sm font-medium">{user.username}</span>
           <button
             onClick={handleSignOut}
             className="bg-transparent text-gray-500 border-2 border-gray-500 rounded-lg px-4 py-2 font-medium hover:bg-gray-500 hover:text-white hover:cursor-pointer transition-colors"

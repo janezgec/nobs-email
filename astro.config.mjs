@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 import node from '@astrojs/node';
 
-const { SERVER_ALLOWED_HOSTS } = loadEnv(String(process.env.NODE_ENV), process.cwd(), "");
+const { SERVER_ALLOWED_HOSTS } = loadEnv(String(import.meta.env.NODE_ENV), process.cwd(), "");
 
 // https://astro.build/config
 export default defineConfig({

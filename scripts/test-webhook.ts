@@ -25,7 +25,7 @@ function createMockRequest(body: any, secret: string) {
     console.log('Testing inbound webhook function directly (unit test)...');
     
     // Create mock request object
-    const mockRequest = createMockRequest(mockPostmarkPayload, process.env.POSTMARK_WEBHOOK_SECRET);
+    const mockRequest = createMockRequest(mockPostmarkPayload, import.meta.env.POSTMARK_WEBHOOK_SECRET);
     
     // Call the webhook function directly
     const response = await POST({ request: mockRequest });

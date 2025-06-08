@@ -35,6 +35,9 @@ const App: FunctionalComponent = () => {
   // Reprocessing state
   const [showReprocessPrompt, setShowReprocessPrompt] = useState(false);
   const [isReprocessing, setIsReprocessing] = useState(false);
+  
+  // Copy button state
+  const [copiedDatabase, setCopiedDatabase] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('App component mounted - useEffect running');
@@ -154,8 +157,32 @@ const App: FunctionalComponent = () => {
   // Modal handlers
   const handleCreateDatabase = async (name: string) => {
     try {
-      await createDatabase(pb, user.id, name);
+      const database = await createDatabase(pb, user.id, name);
       // Database list will update automatically via the listener
+      
+      // Kickstart the database with default collections
+      try {
+        const response = await fetch('/api/kickstart-db', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            databaseId: database.id,
+            token: pb.authStore.token
+          })
+        });
+
+        const result = await response.json();
+        
+        if (!result.success) {
+          console.error('Failed to kickstart database:', result.error);
+          // Don't throw error here - database was created successfully
+        }
+      } catch (kickstartError) {
+        console.error('Error kickstarting database:', kickstartError);
+        // Don't throw error here - database was created successfully
+      }
     } catch (error) {
       console.error('Error creating database:', error);
       throw error;
@@ -322,24 +349,42 @@ const App: FunctionalComponent = () => {
         <nav className="flex items-center space-x-1">
           {databases.map((database) => (
             <div key={database.id} className="relative group">
-              <button
-                onClick={() => setSelectedTab(database.id)}
-                className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors duration-200 ${
-                  selectedTab === database.id
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
-                }`}
-              >
-                {database.name || database.id}
-              </button>
-              {selectedTab === database.id && (
                 <button
-                  onClick={() => handleDeleteDatabase(database.id)}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Delete database"
+                onClick={() => setSelectedTab(database.id)}
+                className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors duration-200 select-text ${
+                  selectedTab === database.id
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                }`}
                 >
-                  ×
+                {user?.username}+{database.name || database.id}@nobs.email
                 </button>
+              {selectedTab === database.id && (
+                <div className="absolute -top-1 -right-1 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => {
+                      const email = `${user?.username}+${database.name || database.id}@nobs.email`;
+                      navigator.clipboard.writeText(email);
+                      setCopiedDatabase(database.id);
+                      setTimeout(() => setCopiedDatabase(null), 2000);
+                    }}
+                    className="w-5 h-5 bg-blue-500 text-white text-xs rounded-full hover:bg-blue-600 flex items-center justify-center"
+                    title="Copy email address"
+                  >
+                    {copiedDatabase === database.id ? (
+                      <span className="text-[8px] font-bold">✓</span>
+                    ) : (
+                      '📋'
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteDatabase(database.id)}
+                    className="w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600"
+                    title="Delete database"
+                  >
+                    ×
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -504,7 +549,9 @@ const App: FunctionalComponent = () => {
                   
                   {/* Data table */}
                   <div className="flex-1 overflow-hidden">
-                    <DocumentTable 
+                    <DocumentTable
+                      user={user || null}
+                      database={databases.find(db => db.id === selectedTab) || null} 
                       documents={collectionData} 
                       collection={collections.find(c => c.id === selectedCollection) || null} 
                     />
