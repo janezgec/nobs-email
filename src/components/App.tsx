@@ -306,6 +306,55 @@ const App: FunctionalComponent = () => {
     }
   };
 
+  const handleExportCollection = async () => {
+    if (!selectedCollection || !selectedTab || !user) return;
+    
+    try {
+      const response = await fetch('/api/export-collection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collectionId: selectedCollection,
+          databaseId: selectedTab,
+          token: pb.authStore.token
+        })
+      });
+
+      if (response.ok) {
+        // Handle CSV download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        // Get filename from Content-Disposition header or use default
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'collection-export.csv';
+        if (contentDisposition) {
+          const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (matches) {
+            filename = matches[1];
+          }
+        }
+        
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const result = await response.json();
+        alert('Failed to export collection: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error exporting collection:', error);
+      alert('Failed to export collection: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
   if (!user) {
     return (
       <div className="flex justify-center items-center flex-col">
@@ -540,9 +589,14 @@ const App: FunctionalComponent = () => {
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                          Live
-                        </div>
+                        <button
+                          onClick={handleExportCollection}
+                          disabled={collectionData.length === 0}
+                          className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Export collection data as CSV"
+                        >
+                          Export CSV
+                        </button>
                       </div>
                     </div>
                   </div>
