@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 export default function Header({ currentPath }: HeaderProps) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,7 +53,9 @@ export default function Header({ currentPath }: HeaderProps) {
   if (isLoading) {
     return (
       <header className="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto">
-        <div className="text-lg sm:text-xl font-bold">NoBS.email</div>
+        <a href="/" className="text-lg sm:text-xl font-bold hover:text-cyan-600 transition-colors">
+          NoBS.email
+        </a>
         <div className="bg-transparent text-cyan-600 border-2 border-cyan-600 rounded-lg px-4 py-2 font-medium">
           Loading...
         </div>
@@ -63,7 +65,9 @@ export default function Header({ currentPath }: HeaderProps) {
 
   return (
     <header className="flex justify-between items-center p-4 sm:p-6 max-w-7xl mx-auto">
-      <div className="text-lg sm:text-xl font-bold">NoBS.email</div>
+      <a href="/" className="text-lg sm:text-xl font-bold hover:text-cyan-600 transition-colors">
+        NoBS.email
+      </a>
       
       {user ? (
         <div className="flex items-center gap-4">
