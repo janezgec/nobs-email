@@ -78,7 +78,7 @@ export default function Header({ currentPath }: HeaderProps) {
       ) : (
         <a
           href={currentPath === '/' ? '/sign-in' : '/'}
-          className="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium hover:bg-blue-600 hover:text-white hover:cursor-pointer transition-colors"
+          className="bg-transparent text-blue-600 border-2 border-blue-600 rounded-lg px-4 py-2 font-medium hover:bg-blue-400 hover:text-white hover:cursor-pointer transition-colors"
         >
           {currentPath === '/' ? 'Sign in' : 'Back to Home'}
         </a>

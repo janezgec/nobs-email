@@ -234,7 +234,7 @@ const AddDocumentModal: FunctionalComponent<AddDocumentModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-blue-500 text-white hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50"
                 disabled={isLoading}
               >
                 {isLoading ? 'Adding...' : 'Add Document'}
