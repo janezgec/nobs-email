@@ -31,17 +31,8 @@ function createZodSchemaFromCollections(collections: Collection[]): z.ZodSchema 
         case 'boolean':
           zodType = z.boolean().optional();
           break;
-        case 'string':
         default:
-          if (schema.format === 'email') {
-            zodType = z.string().email().optional();
-          } else if (schema.format === 'uri') {
-            zodType = z.string().url().optional();
-          } else if (schema.format === 'date-time') {
-            zodType = z.string().datetime().optional();
-          } else {
-            zodType = z.string().optional();
-          }
+          zodType = z.string().optional();
           break;
       }
       
